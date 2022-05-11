@@ -5,38 +5,38 @@
       <el-col :span="3">
         <div class="qa_left">
           <ul>
-            <li class="active">全部</li>
-            <li>关注</li>
-            <li>未回答</li>
+            <li :class="{'active':isActive === 1}" @click="isActive = 1">全部</li>
+            <li :class="{'active':isActive === 2}" @click="isActive = 2">关注</li>
+            <li :class="{'active':isActive === 3}" @click="isActive = 3">未回答</li>
           </ul>
         </div>
       </el-col>
-      <el-col :span="13">
+      <el-col :span="13" v-infinite-scroll="onLoad"
+              infinite-scroll-distance="1"
+              infinite-scroll-disabled="false"
+              infinite-scroll-immediate="true">
         <div class="bg-purple-light">
           <template>
-            <el-tabs v-model="activeName" @tab-click="handleClick">
-              <el-tab-pane label="最新" name="first">
-                <div class="card">
+            <el-tabs v-model="activeName" @tab-click="handleClick" >
+              <el-tab-pane label="最新" name="first" >
+                <div v-for="(item,index) in list" class="card" :key="index">
                   <ul>
                     <li>
-                      <div>0</div>
+                      <div>{{ item.answer_count }}</div>
                       <p>回答</p>
                     </li>
                   </ul>
                   <div class="card_right">
                     <div class="card_right_title">
-                      <router-link  to="/questions/123" target=“_blank”>
-                        <h2>记录公开的REST API</h2>
+                      <router-link  :to='/questions/+(item.id)' target="_blank">
+                        <h2>{{ item.title }}</h2>
                       </router-link>
                     </div>
-                    <p class="card_right_desc">向REST API添加文档是必要的，因为它有助于开发人员将他们的应用程序与您的系统集成。 当你发布模块时，创世会自动生成文档，从而为你的REST API编制文档。平台从REST API的属性、REST API方法及其参数生成文档。 执行以下操作:</p>
+                    <p class="card_right_desc">{{item.content}}</p>
                     <div class="card_right_header">
                       <ul>
                         <li class="card_right_header_label">
-                          <a href="">mysql</a>
-                        </li>
-                        <li class="card_right_header_label">
-                          <a href="">javascript</a>
+                          <a href="">{{item.label}}</a>
                         </li>
                         <li>
                           <i class="el-icon-view"></i>
@@ -44,11 +44,11 @@
                         </li>
                         <li>
                           <i class="el-icon-time"></i>
-                          <span>2022-04-24 14:43</span>
+                          <span>{{item.create_date}}</span>
                         </li>
                       </ul>
                       <div class="card_right_header_user">
-                        <a href="">双龙</a>
+                        <a href="">{{ item.create_user }}</a>
                       </div>
                     </div>
                   </div>
@@ -83,7 +83,7 @@
                 </li>
                 <li>
                   <span>提问</span>
-                  <em>0</em>
+                  <em>{{ questionNum }}</em>
                 </li>
                 <li>
                   <span>被点赞</span>
@@ -118,15 +118,87 @@ export default {
   name: "QA",
   data() {
     return {
-      activeName: 'first'
+      data:[],
+      list:[],
+      questionNum:0,
+      activeName: 'first',
+      isActive:1,
+      listParams: {
+        pageNum: 1,
+        pageSize:3,
+        loading: false,
+        error: false,
+        finished: false,
+      },
     };
   },
   components: {
     toolbar
   },
+  created() {
+    this.getDemoList();
+    this.getMyQa();
+  },
+  mounted() {
+
+  },
+  computed: {
+    disabled() {
+        // console.log(
+        //     this.listParams.loading || this.listParams.finished
+        // );
+      return this.listParams.loading || this.listParams.finished;
+    },
+  },
+  beforeDestroy () {
+  },
   methods:{
     handleClick(tab, event) {
       console.log(tab, event);
+    },
+    onLoad() {
+      this.listParams.loading = true;
+      if (this.listParams.finished === false) {
+        this.listParams.pageNum++;
+        this.getDemoList();
+      }
+    },
+    getDemoList() {
+      var that = this;
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
+        if (res.status === 200){
+          if (res.data.obj.list.length > 0){
+            that.list = that.list.concat(res.data.obj.list);
+            that.listParams.loading = false;
+            if (res.data.obj.list.length < that.listParams.pageSize) {
+                          that.listParams.finished = true;
+                          this.$message({
+                            showClose: true,
+                            message: '没有更多数据了哦',
+                            type: 'warning'
+                          });
+                        }
+            // that.data = res.data
+            // that.list = that.data.obj.list
+            console.log(res)
+          }else{
+            that.listParams.loading = false;
+            that.listParams.finished = true;
+          }
+        }
+        that.listParams.loading = false;
+      })
+          .catch(function () {
+            that.listParams.error = true;
+            that.listParams.loading = false;
+          });
+    },
+    //获取我的提问
+    getMyQa(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/getMyQa',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
+        // console.log(res.data.obj)
+        this.questionNum = res.data.obj.total
+      })
     }
   }
 }

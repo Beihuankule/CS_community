@@ -12,8 +12,8 @@
             <div class="issue-title-wap">
               <div class="title-wap">
                 <div class="wap-left">
-                  <h6><a href="" class="name">洪双龙和红双龙</a> </h6>
-                  <span class="issur-time">2022-04-25 15:52</span>
+                  <h6><a href="" class="name">{{ create_user }}</a> </h6>
+                  <span class="issur-time">{{ create_date }}</span>
                   <div class="adoption-rate">采纳率:100%</div>
                 </div>
                 <div class="wap-right">
@@ -24,12 +24,11 @@
           </div>
           <!--        问题标题-->
           <div class="title-box">
-            <h1>这个功能有点多</h1>
+            <h1>{{ ContentTitle }}</h1>
           </div>
           <!--        标签-->
           <div class="tags">
-            <el-tag type="info">前端</el-tag>
-            <el-tag type="info">其他</el-tag>
+            <el-tag type="info">{{ label }}</el-tag>
           </div>
           <!--        md预览组件-->
           <mavon-editor
@@ -55,27 +54,35 @@
             <li>
               <span><i class="el-icon-share"></i>分享</span>
             </li>
+            <li v-show="delShow">
+              <router-link  :to='/editquestions/+(qaid)' target=“_blank” class="edit">
+                <span >编辑</span>
+              </router-link>
+            </li>
+            <li class="del" v-show="delShow">
+              <span @click="delQuestion">删除</span>
+            </li>
           </ul>
         </div>
-        <div class="Answer_">
-          <h4 class="Answer_title">2条回答</h4>
+        <div class="Answer_" v-show="AnswerDataLength">
+          <h4 class="Answer_title" >{{AnswerDataLength}} 条回答</h4>
           <div class="Answer_content">
             <div class="answer-list">
               <ul>
-                <li>
+                <li v-for="(item,index) in AnswerData"  :key="index">
                   <div class="answer-wap">
                     <span>
                       <a href=""><img src="https://www.beihuankule.com/static/my/img/wanhua.png" alt="" class="avatar" ></a>
                     </span>
                     <div>
                       <div class="title">
-                        <a href="" class="name">双龙</a>
-                        <span class="time">2022-04-25 19:31</span>
+                        <a href="" class="name">{{item.user_id}}</a>
+                        <span class="time">{{ item.create_date }}</span>
                       </div>
                       <div>
                         <mavon-editor
                             class="md"
-                            :value="Answercontent"
+                            :value='item.content'
                             :subfield="false"
                             :defaultOpen="'preview'"
                             :toolbarsFlag="false"
@@ -88,31 +95,35 @@
                       <div>
                         <ul class="answer">
                           <li class="answer_span">
-                            <span @click="CommentBox = !CommentBox"><i class="el-icon-edit"></i> 评论</span>
+                            <span @click="isShow = item.id" ><i class="el-icon-edit"></i> 评论</span>
                           </li>
                           <li class="thumbs_up"><span><i class="iconfont icon-dianzan"></i> 有用 <em>10</em></span></li>
                           <li>
                             <span><i class="el-icon-share"></i>分享</span>
                           </li>
+                          <li class="del" v-show="item.user_id === Current_user">
+                            <span @click="delComment(item.id)">删除</span>
+                          </li>
                         </ul>
                       </div>
 <!--                      评论列表-->
-                      <div class="comment_pad">
-                        <div>
+                      <div class="comment_pad" >
+                        <div class="comment_padList" v-for="(key,index) in AnswerData[index].children"  :key="index" :class="{comment_list_Show:list_Show}" >
 <!--                          回复信息-->
-                          <div class="comment_list">
+                          <div class="comment_list"  >
                             <span class="avatar-box">
                               <img class="avatar" src="https://www.beihuankule.com/static/my/img/wanhua.png" alt="">
                             </span>
                             <div>
                               <div class="title">
-                                <a href="" class="name">双龙</a>
-                                <span class="time">2022-04-25 19:31</span>
+                                <a href="" class="name">{{ key.user_id }}</a>
+                                <a href="" class="name" v-show="key.reply_user_id">@ {{key.reply_user_id}}</a>
+                                <span class="time">{{ key.create_date }}</span>
                               </div>
                               <div>
                                 <mavon-editor
                                     class="md"
-                                    :value="commentlist"
+                                    :value="key.content"
                                     :subfield="false"
                                     :defaultOpen="'preview'"
                                     :toolbarsFlag="false"
@@ -129,27 +140,34 @@
                                     <span><i class="iconfont icon-dianzan"></i>赞</span>
                                   </li>
                                   <li>
-                                    <span @click="Comment_box = !Comment_box ">回复</span>
+                                    <span @click="reply_boxShow(key.id)">回复</span>
+                                  </li>
+                                  <li v-show="key.user_id === Current_user">
+                                    <span @click="delReply(key.id)">删除</span>
                                   </li>
                                 </ul>
                               </div>
                             </div>
                           </div>
 <!--                          点击回复-->
-                          <div class="Comment_box" v-show="Comment_box">
-                            <v-md-editor v-model="Reply_text" right-toolbar="null"  height="150px"></v-md-editor>
-                            <div class="Submit">
-                              <span>回复</span>
-                            </div>
-                          </div>
+<!--                          <div class="reply_box" v-show="reply_box">-->
+                            <div class="reply_box" :class="{'isShow':reply_id === key.id}">
+                              <v-md-editor v-model="Reply_text" right-toolbar="null"  height="150px"></v-md-editor>
+                              <div class="Submit" >
+                                <span @click="replyPost(item.id)">回复</span>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="btn-load-more-comment" v-show="AnswerData[index].children.length > 2">
+                          <span @click="Get_comments" v-show="!list_Show">点击获取全部评论</span>
                         </div>
                       </div>
 <!--                      评论-->
                       <div class="ask-comment-form">
-                        <div class="Comment_box" v-show="CommentBox">
+                        <div class="Comment_box" :class="{'isShow':isShow === item.id}">
                           <v-md-editor v-model="Comment_text" right-toolbar="null"  height="200px"></v-md-editor>
                           <div class="Submit">
-                            <span>评论</span>
+                            <span @click="postComment(item.id)">评论</span>
                           </div>
                         </div>
                       </div>
@@ -164,7 +182,7 @@
         <div class="md_answer" id="md_answer">
           <v-md-editor ref="searchForm" v-model="text"  height="200px"></v-md-editor>
           <div class="Submit">
-            <span>提交</span>
+            <span @click="postAnswer">提交</span>
           </div>
         </div>
       </el-col>
@@ -228,34 +246,240 @@ export default {
   },
   data() {
     return {
+      isShow:'',
       //写回答的输入框内容
       text:'',
+      qaid:'',
       //回复文本内容
       Reply_text:'',
       //评论文本内容
       Comment_text:'',
       Comment_box:0,
+      AnswerData:[],
+      AnswerDataLength:0,
+      commentdata:[],
+      replys:'',
       CommentBox:0,
-      webDataString: '如果要在JavaScript代码中，使用fs 模块来操作文件，则需要使用如下的方式先导入它：\n' +
-          '\n' +
-          '```js\n' +
-          'const fs = require(\'fs\');\n' +
-          '```',
-      Answercontent:'这是一个回答的MD展示区域，我的VUE代码如下：\n' +
-          '\n' +
-          '```js\n' +
-          'components: {\n' +
-          '    toolbar,\n' +
-          '  },' +
-          '',
-      commentlist:"这是一条评论这是一条评论这是一条评论这是一条评论这是一条评论这是一条评论这是一条评论",
+      //问题标题
+      ContentTitle:'',
+      //问题内容
+      webDataString: '',
+      AnswerId:'',
+      label:'',
+      delShow:false,
+      create_user:'',
+      Current_user:'',
+      reply_box:false,
+      list_Show:false,
+      reply_id:'',
+      create_date:'',
+      Answercontent:'',
+      commentlist:'',
     }
+  },
+  created() {
+    this.geturl();
+    this.getQAContent();
+    this.getQAAnswer();
+    this.getQAComment();
+  },
+  beforeCreate() {
+    //判断是否登陆
+    this.$ajax.post('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
+      this.Current_user = res.data.obj.account
+    })
   },
   methods:{
     gotomd_answer(){
       var anchor = this.$el.querySelector('#md_answer')
       anchor.scrollIntoView({behavior: 'smooth'})
       this.$refs.searchForm.focus()
+    },
+    //获取当前问答id
+    geturl(){
+      let url = window.location.href;
+        this.qaid = url.slice(url.indexOf('#')+12)
+        console.log(this.qaid);
+    },
+    //获取问答内容
+    getQAContent(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaContentById',{id:this.qaid}).then(res=>{
+
+        console.log(res.data.obj.answerObj)
+        if (res.data.obj.answerObj !== null){
+          this.AnswerDataLength = res.data.obj.answerObj.length
+          this.AnswerData = res.data.obj.answerObj
+        }
+
+        let QAContentData = res.data.obj.qaContentObj
+        this.ContentTitle = QAContentData.title
+        this.webDataString = QAContentData.content
+        this.create_user = QAContentData.create_user
+        this.create_date = QAContentData.create_date
+        this.label = QAContentData.label
+        this.AnswerId = this.AnswerData.id
+        console.log('---------------')
+        console.log(this.create_user)
+        console.log(this.Current_user)
+        if (this.create_user === this.Current_user){
+          this.delShow = true
+        }
+      })
+    },
+    //获取问题回答
+    getQAAnswer(){
+      this.$ajax.post('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
+        if (this.create_user === res.data.obj.account){
+          this.delShow = true
+        }
+      })
+    },
+    //获取问答评论
+    getQAComment(){
+      // this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaContentById',{id:this.qaid}).then(res=>{
+      //   // console.log(res)
+      // })
+    },
+    //回答问题
+    postAnswer(){
+      if (this.text !== ''){
+        this.$confirm('请认真对待每一次回答哦', '提示', {
+          confirmButtonText: '确定提交',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/answerQuestion',{qa_content_id:this.qaid,content:this.text}).then(res=>{
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            });
+            setTimeout(function (){
+              location.reload();
+            },1000)
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消'
+          });
+        });
+      }else{
+        this.$message.error('请填写回答内容');
+      }
+    },
+    //评论
+    postComment(id){
+      // console.log(id)
+
+      if (this.Comment_text !== ''){
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/addComment',{answer_id:id,content:this.Comment_text}).then(res=>{
+          this.$message({
+            message: res.data.msg,
+            type: 'success'
+          });
+          setTimeout(function (){
+            location.reload();
+          },1000)
+        })
+      }else{
+        this.$message.error('请输入评论内容');
+      }
+    },
+    //删除回答
+    delQuestion(){
+      this.$confirm('是否确认删除此问题?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/delQuestion',{id:this.qaid}).then(res=>{
+          console.log(res)
+        })
+        this.$message({
+          type: 'success',
+          message: '问题删除成功!'
+        });
+        setTimeout(function (){
+          window.location.href = 'http://dev.water-mind.com:8080/#/QA'
+        },1000)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消删除'
+        });
+      });
+    },
+    delComment(id){
+    console.log(id)
+      this.$confirm('是否确认删除此回答?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/delAnswer',{id:id}).then(res=>{
+          console.log(res)
+        })
+        this.$message({
+          type: 'success',
+          message: '回答删除成功!'
+        });
+        setTimeout(function (){
+          location.reload();
+        },1000)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消删除'
+        });
+      });
+    },
+    delReply(id){
+      console.log(id)
+      this.$confirm('是否确认删除此评论?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/delComment',{id:id}).then(res=>{
+          console.log(res)
+        })
+        this.$message({
+          type: 'success',
+          message: '评论删除成功!'
+        });
+        setTimeout(function (){
+          location.reload();
+        },1000)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消删除'
+        });
+      });
+    },
+    //子回复
+    reply_boxShow(id){
+      this.reply_box = !this.reply_box
+      console.log(id)
+      this.reply_id = id
+    },
+    replyPost(id){
+      if (this.Reply_text !== ''){
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/addComment',{sup_comment_id:this.reply_id,content:this.Reply_text,answer_id:id}).then(res=>{
+          this.$message({
+            message: res.data.msg,
+            type: 'success'
+          });
+          setTimeout(function (){
+            location.reload();
+          },1000)
+        })
+      }else{
+        this.$message.error('请输入评论内容');
+      }
+    },
+    Get_comments(){
+      this.list_Show = true
     }
   }
 }
@@ -503,7 +727,51 @@ h1,h2,h3,h4,h5,h6{
 .comment_pad{
   padding: 0 25px;
 }
-
+.Comment_box{
+  display: none;
+}
+.isShow{
+  display: block !important;
+}
+.ask-comment-form {
+  min-width: 700px;
+}
+.del > span{
+  color: red;
+}
+.edit > span{
+  color: #409EFF;
+}
+.reply_box {
+  min-width: 664px;
+  display: none;
+  margin-bottom: 40px;
+}
+.comment_padList{
+  display: none;
+}
+.comment_padList:nth-child(-n+2){
+  /*background-color: red;*/
+  display: block;
+  display: flex;
+  flex-wrap: wrap;
+}
+.comment_list_Show{
+  display: block !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+.btn-load-more-comment{
+  height: 20px;
+  margin: 0 0 24px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #777888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
 
 <style>

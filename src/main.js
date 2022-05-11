@@ -6,6 +6,7 @@ import axios from 'axios'
 import axios1 from './axios1'
 import VueRouter from 'vue-router'
 import router from './router';
+import infiniteScroll from 'vue-infinite-scroll'
 
 import VueCookies from 'vue-cookies';
 //md书写
@@ -33,7 +34,7 @@ Vue.prototype.$axios= axios
 Vue.prototype.$ajax= axios1
 Vue.config.productionTip = false
 Vue.use(VueRouter)
-
+Vue.use(infiniteScroll)
 new Vue({
   render: h => h(App),
   router,

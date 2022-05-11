@@ -19,6 +19,7 @@
     "qs": "^6.10.3",
     "vue": "^2.6.11",
     "vue-cookies": "^1.8.1",
+    "vue-infinite-scroll": "^2.0.2",
     "vue-markdown": "^2.2.4",
     "vue-router": "^3.5.3"
   },

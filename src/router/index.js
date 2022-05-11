@@ -9,6 +9,7 @@ import newArticle  from '../components/newArticle.vue'//新建文章
 import home  from '../components/home.vue'//主页
 import doc  from '../components/doc.vue'//文档页面
 import newquestions  from '../components/newquestions.vue'//新问题
+import editquestions  from '../components/editquestions.vue'//新问题
 import questions  from '../components/questions.vue'//问题
 import login  from '../components/login.vue'//登陆页面
 import authentication  from '../components/authentication.vue'//认证页面
@@ -45,6 +46,11 @@ let routes = [     // 打造路由规则
         component:PersonalBlog,
     },
     {
+        name:'editquestions',
+        path:'/editquestions/:id',
+        component:editquestions,
+    },
+    {
         name:'newArticle',
         path:'/newArticle',
         component:newArticle,
@@ -57,7 +63,7 @@ let routes = [     // 打造路由规则
     {
         name:'newquestions',
         path:'/newquestions',
-        component:newquestions
+        component:newquestions,
     },
     {
         name:'questions',
@@ -103,9 +109,41 @@ let routes = [     // 打造路由规则
         component:Nopage   // 展示丢失页面
     },
 ]
+
 let router = new VueRouter({      // 打造路由实例
     routes,
     linkActiveClass:'toolbar_active'     //  定义激活时候的class 名字
 })
+
+// 挂载路由导航守卫
+router.beforeEach((to, from, next) => {
+    // to将要访问的路径
+    // from代表从哪个路径跳转而来
+    // next是一个函数，表示放行
+    // next() 放行 next('/cs_devise/#/login') 强制跳转
+    let arr
+    function getToken(){
+        var strcookie = document.cookie;//获取cookie字符串
+        var arrcookie = strcookie.split("; ");//分割
+        //遍历匹配
+        for ( var i = 0; i < arrcookie.length; i++) {
+               arr = arrcookie[i].split("=");
+            if (arr[0] === "csToken"){
+                // console.log(arr[1])
+            }
+        }
+    }
+    getToken()
+    const tokenStr = arr[1]
+    // alert(tokenStr)
+    if (to.path === '/newquestions'){
+        if (!tokenStr){
+            return alert('请先点击进行登陆')
+        }
+    }
+    // 存在token，直接放行
+    next()
+})
+
 
 export default router

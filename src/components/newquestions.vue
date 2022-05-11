@@ -21,7 +21,7 @@
               <el-tag type="info" v-show="this.tagsvalue.length >= 2">{{tagsvalue[1]}}</el-tag>
               <el-tag type="info" v-show="this.tagsvalue.length >= 3">{{tagsvalue[2]}}</el-tag>
             </div>
-            <span v-show="this.tagsvalue.length === 0">至少添加一个标签</span>
+            <span v-show="this.tagsvalue.length === 0">请选择问题对应标签</span>
           </span>
         </div>
       </div>
@@ -32,7 +32,6 @@
         <el-select v-model="tagsvalue" :multiple-limit="3" :multiple="true" placeholder="请选择" >
           <el-option
               v-for="item in options"
-              @click.native = 'tags'
               :key="item.value"
               :label="item.label"
               :value="item.value">
@@ -43,7 +42,7 @@
         </div>
       </div>
       <div class="btns_wrap">
-        <span>提交问题</span>
+        <span @click="Submit">提交问题</span>
       </div>
     </el-col>
   </el-row>
@@ -56,9 +55,6 @@ export default {
   name: "newquestions",
   components: {
     toolbar,
-  },
-  mounted() {
-    document.querySelector('.v-md-editor').style.height = document.body.offsetHeight - 260 + 'px'
   },
   data() {
     return {
@@ -90,11 +86,43 @@ export default {
         label: 'MySql'
       }],
       tagsvalue: [],
+      data:''
     }
   },
+  mounted() {
+    document.querySelector('.v-md-editor').style.height = document.body.offsetHeight - 260 + 'px'
+  },
+  beforeCreate() {
+    this.$ajax.get('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
+      this.data = res.data
+    })
+  },
   methods:{
-    tags() {
-
+    Submit() {
+      let label = ''
+      for (var i=0;i<this.tagsvalue.length;i++)
+      {
+        label =  label + this.tagsvalue[i] + '   '
+      }
+      // let label = (this.tagsvalue[i] +',')
+      let content = this.text
+      let title = this.input
+      if (label&&content&&title !== ''){
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/addMyQa',{label,content,title}).then(res=>{
+          this.$message({
+            message: res.data.msg,
+            type: 'success'
+          });
+          setTimeout(function (){
+            window.location.href = 'http://dev.water-mind.com:8080/#/QA'
+          },1000)
+        })
+      }else{
+        this.$message({
+          message: '请输入完整标题与内容并选择对应标签',
+          type: 'warning'
+        });
+      }
     },
     mark_tags_box(){
       this.mark_selection_box = true

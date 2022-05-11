@@ -178,7 +178,7 @@ export default {
   height: 48px;
   width: 100%;
   align-items: center;
-  z-index: 99999;
+  z-index: 200;
   background-color: white;
   box-shadow: 0 1px 4px 0 rgb(0 0 0 / 35%);
 }
@@ -381,5 +381,8 @@ div > a{
 }
 .fixed{
   position: fixed;
+}
+.username > a{
+  border-top: none;
 }
 </style>
