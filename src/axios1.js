@@ -17,6 +17,7 @@ const baseURL = "https://sx.water-mind.com/cs_s";
 //const baseURL = "http://192.168.199.223:8081/cs_s";
 const request = axios.create({
     baseURL: baseURL,
+    withCredentials:true//允许带cookie
 });
 
 // 请求拦截器

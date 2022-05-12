@@ -47,9 +47,13 @@
             <li class="answer_span">
               <span @click="gotomd_answer"><i class="el-icon-edit"></i> 写回答</span>
             </li>
-            <li class="thumbs_up"><span><i class="iconfont icon-dianzan"></i> 好问题 <em>20</em></span></li>
-            <li>
+            <li class="thumbs_up" id="dianzan" @click="dianzan(qaid)" v-show="problemDzShow === 'wdz'"><span><i class="iconfont icon-dianzan"></i> 好问题 <em>{{old_fabulous_num}}</em></span></li>
+            <li class="thumbs_up" id="qxdianzan" @click="rem_dianzan(qaid)" v-show="problemDzShow === 'dz'"><span><i class="iconfont icon-dianzan1"></i> 好问题 <em>{{ old_fabulous_num }}</em></span></li>
+            <li @click="spotFocus(qaid)" v-show="follow === 'wgz' ">
               <span class="el-icon-star-off"><i></i>关注问题</span>
+            </li>
+            <li @click="cancelSpotFocus(qaid)" v-show="follow === 'gz' ">
+              <span class="el-icon-star-on"><i></i>关注问题</span>
             </li>
             <li>
               <span><i class="el-icon-share"></i>分享</span>
@@ -69,7 +73,7 @@
           <div class="Answer_content">
             <div class="answer-list">
               <ul>
-                <li v-for="(item,index) in AnswerData"  :key="index">
+                <li v-for="(item,index) in AnswerData"  :key="index" class="m-top">
                   <div class="answer-wap">
                     <span>
                       <a href=""><img src="https://www.beihuankule.com/static/my/img/wanhua.png" alt="" class="avatar" ></a>
@@ -92,12 +96,13 @@
                             :ishljs="true"
                         />
                       </div>
-                      <div>
+                      <div class="m-btm">
                         <ul class="answer">
                           <li class="answer_span">
                             <span @click="isShow = item.id" ><i class="el-icon-edit"></i> 评论</span>
                           </li>
-                          <li class="thumbs_up"><span><i class="iconfont icon-dianzan"></i> 有用 <em>10</em></span></li>
+                          <li class="thumbs_up" @click="dianzan(item.id)" v-show="item.is_fabulous === 'wdz'"><span><i class="iconfont icon-dianzan"></i> 解决 <em>{{ item.fabulous_num }}</em></span></li>
+                          <li class="thumbs_up" @click="rem_dianzan(item.id)" v-show="item.is_fabulous === 'dz'"><span><i class="iconfont icon-dianzan1"></i> 解决 <em>{{ item.fabulous_num }}</em></span></li>
                           <li>
                             <span><i class="el-icon-share"></i>分享</span>
                           </li>
@@ -135,9 +140,11 @@
                               </div>
                               <div>
                                 <ul class="answer">
-                                  <li>
-<!--                                    后期引入其他字体图标库进行更换-->
-                                    <span><i class="iconfont icon-dianzan"></i>赞</span>
+                                  <li @click="dianzan(key.id)" v-show="key.is_fabulous === 'wdz'">
+                                    <span ><i class="iconfont icon-dianzan" ></i>赞 <em v-show="key.fabulous_num !== 0">{{key.fabulous_num}}</em></span>
+                                  </li>
+                                  <li @click="rem_dianzan(key.id)" v-show="key.is_fabulous === 'dz'">
+                                    <span ><i class="iconfont icon-dianzan1" ></i>赞<em v-show="key.fabulous_num !== 0">{{key.fabulous_num}}</em></span>
                                   </li>
                                   <li>
                                     <span @click="reply_boxShow(key.id)">回复</span>
@@ -275,6 +282,10 @@ export default {
       create_date:'',
       Answercontent:'',
       commentlist:'',
+      problemDzShow:'',
+      answer_dznum:'',
+      old_fabulous_num:'',
+      follow:'',
     }
   },
   created() {
@@ -304,23 +315,30 @@ export default {
     //获取问答内容
     getQAContent(){
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaContentById',{id:this.qaid}).then(res=>{
-
-        console.log(res.data.obj.answerObj)
+        // console.log('好问题')
+        // console.log(res.data.obj.qaContentObj)
+        // console.log(res.data.obj.answerObj)
+        this.follow = res.data.obj.qaContentObj.is_focus
+        console.log(this.follow)
         if (res.data.obj.answerObj !== null){
           this.AnswerDataLength = res.data.obj.answerObj.length
           this.AnswerData = res.data.obj.answerObj
         }
-
+        // console.log('解决')
+        // console.log(res.data.obj.answerObj)
         let QAContentData = res.data.obj.qaContentObj
+        this.problemDzShow = QAContentData.is_fabulous
+        this.old_fabulous_num = QAContentData.fabulous_num
+        // this.answer_dznum = res.data.obj.answerObj.fabulous_num
         this.ContentTitle = QAContentData.title
         this.webDataString = QAContentData.content
         this.create_user = QAContentData.create_user
         this.create_date = QAContentData.create_date
         this.label = QAContentData.label
         this.AnswerId = this.AnswerData.id
-        console.log('---------------')
-        console.log(this.create_user)
-        console.log(this.Current_user)
+        // console.log('---------------')
+        // console.log(this.create_user)
+        // console.log(this.Current_user)
         if (this.create_user === this.Current_user){
           this.delShow = true
         }
@@ -480,6 +498,39 @@ export default {
     },
     Get_comments(){
       this.list_Show = true
+    },
+    dianzan(id){
+      console.log(id)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFabulous/spotFabulous',{fabulous_obj:id}).then(res=>{
+        console.log(res)
+        // this.new_fabulous_num = this.old_fabulous_num
+        this.getQAContent();
+      })
+    },
+    rem_dianzan(id){
+      console.log(id)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFabulous/cancelSpotFabulous',{fabulous_obj:id}).then(res=>{
+        console.log(res)
+        // window.location.reload("#dianzan");
+        // this.old_fabulous_num = this.new_fabulous_num
+        this.getQAContent();
+      })
+    },
+    //关注此问题
+    spotFocus(id){
+      console.log(id)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFocus/spotFocus',{focus_obj:id}).then(res=>{
+        console.log(res)
+        // this.new_fabulous_num = this.old_fabulous_num
+        this.getQAContent();
+      })
+    },
+    cancelSpotFocus(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFocus/cancelFocus',{focus_obj:id}).then(res=>{
+        console.log(res)
+        // this.new_fabulous_num = this.old_fabulous_num
+        this.getQAContent();
+      })
     }
   }
 }
@@ -771,6 +822,13 @@ h1,h2,h3,h4,h5,h6{
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.m-top{
+  margin-top: 20px;
+  background-color: white;
+}
+.m-btm{
+  margin-bottom: 20px;
 }
 </style>
 

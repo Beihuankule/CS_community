@@ -18,7 +18,7 @@
         <div class="bg-purple-light">
           <template>
             <el-tabs v-model="activeName" @tab-click="handleClick" >
-              <el-tab-pane label="最新" name="first" >
+              <el-tab-pane label="最新" name="first" @click="QAnum = '0' ">
                 <div v-for="(item,index) in list" class="card" :key="index">
                   <ul>
                     <li>
@@ -54,9 +54,78 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="最热" name="second">最热</el-tab-pane>
-              <el-tab-pane label="精华" name="third">精华</el-tab-pane>
-              <el-tab-pane label="待回答" name="fourth">待回答</el-tab-pane>
+              <el-tab-pane label="最热" name="second" @click="QAnum = '2' ">
+                <div v-for="(item,index) in list" class="card" :key="index">
+                  <ul>
+                    <li>
+                      <div>{{ item.answer_count }}</div>
+                      <p>回答</p>
+                    </li>
+                  </ul>
+                  <div class="card_right">
+                    <div class="card_right_title">
+                      <router-link  :to='/questions/+(item.id)' target="_blank">
+                        <h2>{{ item.title }}</h2>
+                      </router-link>
+                    </div>
+                    <p class="card_right_desc">{{item.content}}</p>
+                    <div class="card_right_header">
+                      <ul>
+                        <li class="card_right_header_label">
+                          <a href="">{{item.label}}</a>
+                        </li>
+                        <li>
+                          <i class="el-icon-view"></i>
+                          1
+                        </li>
+                        <li>
+                          <i class="el-icon-time"></i>
+                          <span>{{item.create_date}}</span>
+                        </li>
+                      </ul>
+                      <div class="card_right_header_user">
+                        <a href="">{{ item.create_user }}</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="待回答" name="fourth" @click="QAnum = '1' ">
+                <div v-for="(item,index) in list" class="card" :key="index">
+                  <ul>
+                    <li>
+                      <div>{{ item.answer_count }}</div>
+                      <p>回答</p>
+                    </li>
+                  </ul>
+                  <div class="card_right">
+                    <div class="card_right_title">
+                      <router-link  :to='/questions/+(item.id)' target="_blank">
+                        <h2>{{ item.title }}</h2>
+                      </router-link>
+                    </div>
+                    <p class="card_right_desc">{{item.content}}</p>
+                    <div class="card_right_header">
+                      <ul>
+                        <li class="card_right_header_label">
+                          <a href="">{{item.label}}</a>
+                        </li>
+                        <li>
+                          <i class="el-icon-view"></i>
+                          1
+                        </li>
+                        <li>
+                          <i class="el-icon-time"></i>
+                          <span>{{item.create_date}}</span>
+                        </li>
+                      </ul>
+                      <div class="card_right_header_user">
+                        <a href="">{{ item.create_user }}</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-tab-pane>
             </el-tabs>
           </template>
         </div>
@@ -121,11 +190,12 @@ export default {
       data:[],
       list:[],
       questionNum:0,
+      QAnum:'0',
       activeName: 'first',
       isActive:1,
       listParams: {
         pageNum: 1,
-        pageSize:3,
+        pageSize:20,
         loading: false,
         error: false,
         finished: false,
@@ -153,46 +223,73 @@ export default {
   beforeDestroy () {
   },
   methods:{
-    handleClick(tab, event) {
-      console.log(tab, event);
+    handleClick() {
+      // console.log(tab.index);
+      if (this.activeName === 'first' ){
+        this.QAnum = '0'
+        this.getDemoList();
+      }else if (this.activeName === 'second'){
+        this.QAnum = '2'
+        this.getDemoList();
+      }else{
+        this.QAnum = '1'
+        this.getDemoList();
+      }
     },
     onLoad() {
       this.listParams.loading = true;
       if (this.listParams.finished === false) {
         this.listParams.pageNum++;
-        this.getDemoList();
+        // this.getDemoList();
       }
     },
     getDemoList() {
       var that = this;
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
-        if (res.status === 200){
-          if (res.data.obj.list.length > 0){
-            that.list = that.list.concat(res.data.obj.list);
-            that.listParams.loading = false;
-            if (res.data.obj.list.length < that.listParams.pageSize) {
-                          that.listParams.finished = true;
-                          this.$message({
-                            showClose: true,
-                            message: '没有更多数据了哦',
-                            type: 'warning'
-                          });
-                        }
-            // that.data = res.data
-            // that.list = that.data.obj.list
-            console.log(res)
-          }else{
-            that.listParams.loading = false;
-            that.listParams.finished = true;
-          }
-        }
-        that.listParams.loading = false;
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:this.QAnum}).then(res=> {
+        // console.log(res)
+        that.list = that.list.concat(res.data.obj.list);
+        this.data = res.data.obj.list
+        console.log(that.list)
+        console.log('---------------')
+        console.log(this.QAnum)
+        console.log(res.data.obj.list)
       })
-          .catch(function () {
-            that.listParams.error = true;
-            that.listParams.loading = false;
-          });
     },
+    // getDemoList() {
+    //   var that = this;
+    //   console.log(this.QAnum)
+    //   this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:that.QAnum}).then(res=>{
+    //     // console.log(res)
+    //     if (res.status === 200){
+    //       if (res.data.obj.list.length > 0){
+    //         that.list = that.list.concat(res.data.obj.list);
+    //         this.data = res.data.obj.list
+    //         console.log(that.list)
+    //         console.log(this.data)
+    //         that.listParams.loading = false;
+    //         if (res.data.obj.list.length < that.listParams.pageSize) {
+    //           that.listParams.finished = true;
+    //           this.$message({
+    //             showClose: true,
+    //             message: '没有更多数据了哦',
+    //             type: 'warning'
+    //           });
+    //         }
+    //         // that.data = res.data
+    //         // that.list = that.data.obj.list
+    //         // console.log(res)
+    //       }else{
+    //         that.listParams.loading = false;
+    //         that.listParams.finished = true;
+    //       }
+    //     }
+    //     that.listParams.loading = false;
+    //   })
+    //       .catch(function () {
+    //         that.listParams.error = true;
+    //         that.listParams.loading = false;
+    //       });
+    // },
     //获取我的提问
     getMyQa(){
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/getMyQa',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
