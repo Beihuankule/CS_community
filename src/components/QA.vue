@@ -5,20 +5,60 @@
       <el-col :span="3">
         <div class="qa_left">
           <ul>
-            <li :class="{'active':isActive === 1}" @click="isActive = 1">全部</li>
-            <li :class="{'active':isActive === 2}" @click="isActive = 2">关注</li>
-            <li :class="{'active':isActive === 3}" @click="isActive = 3">未回答</li>
+            <li :class="{'active':isActive === 1}" @click="getWhole" >全部</li>
+            <li :class="{'active':isActive === 2}" @click="getFocusQa" v-show="csToken !== null">关注</li>
+          </ul>
+          <h4 class="type_title">类型</h4>
+          <ul>
+            <li :class="{'active':isActive === 3}" @click="isActive = 3">前端</li>
+            <li :class="{'active':isActive === 4}" @click="isActive = 4">后端</li>
+            <li :class="{'active':isActive === 5}" @click="isActive = 5">数据库</li>
           </ul>
         </div>
       </el-col>
       <el-col :span="13" v-infinite-scroll="onLoad"
               infinite-scroll-distance="1"
+              infinite-scroll-immediate-check="false"
               infinite-scroll-disabled="false"
               infinite-scroll-immediate="true">
         <div class="bg-purple-light">
           <template>
-            <el-tabs v-model="activeName" @tab-click="handleClick" >
-              <el-tab-pane label="最新" name="first" @click="QAnum = '0' ">
+            <div v-for="(item,index) in list" class="card" :key="index" v-show="FocusQaShow">
+              <ul>
+                <li>
+                  <div>{{ item.answer_count }}</div>
+                  <p>回答</p>
+                </li>
+              </ul>
+              <div class="card_right">
+                <div class="card_right_title">
+                  <router-link  :to='/questions/+(item.id)' target="_blank">
+                    <h2>{{ item.title }}</h2>
+                  </router-link>
+                </div>
+                <p class="card_right_desc">{{item.content}}</p>
+                <div class="card_right_header">
+                  <ul>
+                    <li class="card_right_header_label">
+                      <a href="">{{item.label}}</a>
+                    </li>
+                    <li>
+                      <i class="el-icon-view"></i>
+                      1
+                    </li>
+                    <li>
+                      <i class="el-icon-time"></i>
+                      <span>{{item.create_date}}</span>
+                    </li>
+                  </ul>
+                  <div class="card_right_header_user">
+                    <a href="">{{ item.create_user }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <el-tabs v-model="activeName" @tab-click="handleClick" v-show="!FocusQaShow">
+              <el-tab-pane label="最新" name="first" >
                 <div v-for="(item,index) in list" class="card" :key="index">
                   <ul>
                     <li>
@@ -54,7 +94,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="最热" name="second" @click="QAnum = '2' ">
+              <el-tab-pane label="最热" name="second" >
                 <div v-for="(item,index) in list" class="card" :key="index">
                   <ul>
                     <li>
@@ -90,7 +130,7 @@
                   </div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="待回答" name="fourth" @click="QAnum = '1' ">
+              <el-tab-pane label="待回答" name="fourth" >
                 <div v-for="(item,index) in list" class="card" :key="index">
                   <ul>
                     <li>
@@ -134,13 +174,14 @@
         <div class="grid-content bg-purple">
           <div class="User_information">
             <div class="user_header">
-              <span class="addTitle">我的问答</span>
+              <span class="addTitle" v-show="csToken === null">点击登陆</span>
+              <span class="addTitle" v-show="csToken !== null">我的问答</span>
               <span class="addQuestion">
                 <router-link  to="/newquestions" target=“_blank”><i class="el-icon-plus"></i>提问题</router-link>
                 <router-view/>
               </span>
             </div>
-            <div class="profile_wrap">
+            <div class="profile_wrap" v-show="csToken !== null">
               <ul>
                 <li>
                   <span>收益</span>
@@ -191,11 +232,13 @@ export default {
       list:[],
       questionNum:0,
       QAnum:'0',
+      csToken:'',
       activeName: 'first',
       isActive:1,
+      FocusQaShow:false,
       listParams: {
         pageNum: 1,
-        pageSize:20,
+        pageSize:10,
         loading: false,
         error: false,
         finished: false,
@@ -207,10 +250,17 @@ export default {
   },
   created() {
     this.getDemoList();
-    this.getMyQa();
+
   },
   mounted() {
-
+    if (this.csToken !== null){
+      this.getMyQa();
+    }
+    this.csToken = this.$ajax.getItem("csToken")
+    console.log(this.csToken)
+    if (this.csToken !== null ){
+      console.log('登录了')
+    }
   },
   computed: {
     disabled() {
@@ -221,18 +271,28 @@ export default {
     },
   },
   beforeDestroy () {
+
   },
   methods:{
     handleClick() {
       // console.log(tab.index);
       if (this.activeName === 'first' ){
         this.QAnum = '0'
+        this.listParams.pageNum = 1
+        this.listParams.finished = false;
+        this.list = []
         this.getDemoList();
       }else if (this.activeName === 'second'){
         this.QAnum = '2'
+        this.listParams.pageNum = 1
+        this.listParams.finished = false;
+        this.list = []
         this.getDemoList();
       }else{
         this.QAnum = '1'
+        this.listParams.pageNum = 1
+        this.listParams.finished = false;
+        this.list = []
         this.getDemoList();
       }
     },
@@ -240,68 +300,122 @@ export default {
       this.listParams.loading = true;
       if (this.listParams.finished === false) {
         this.listParams.pageNum++;
-        // this.getDemoList();
+        // alert(1)
+        this.getDemoList();
       }
-    },
-    getDemoList() {
-      var that = this;
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:this.QAnum}).then(res=> {
-        // console.log(res)
-        that.list = that.list.concat(res.data.obj.list);
-        this.data = res.data.obj.list
-        console.log(that.list)
-        console.log('---------------')
-        console.log(this.QAnum)
-        console.log(res.data.obj.list)
-      })
     },
     // getDemoList() {
     //   var that = this;
-    //   console.log(this.QAnum)
-    //   this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:that.QAnum}).then(res=>{
-    //     // console.log(res)
-    //     if (res.status === 200){
-    //       if (res.data.obj.list.length > 0){
-    //         that.list = that.list.concat(res.data.obj.list);
-    //         this.data = res.data.obj.list
-    //         console.log(that.list)
-    //         console.log(this.data)
-    //         that.listParams.loading = false;
-    //         if (res.data.obj.list.length < that.listParams.pageSize) {
-    //           that.listParams.finished = true;
-    //           this.$message({
-    //             showClose: true,
-    //             message: '没有更多数据了哦',
-    //             type: 'warning'
-    //           });
-    //         }
-    //         // that.data = res.data
-    //         // that.list = that.data.obj.list
-    //         // console.log(res)
-    //       }else{
-    //         that.listParams.loading = false;
-    //         that.listParams.finished = true;
-    //       }
-    //     }
-    //     that.listParams.loading = false;
+    //   // console.log(this.QAnum)
+    //   this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:this.QAnum}).then(res=> {
+    //     console.log(res)
+    //     that.list = []
+    //     that.list = that.list.concat(res.data.obj.list);
+    //     this.data = res.data.obj.list
+    //     console.log(that.list)
+    //     // console.log('---------------')
+    //     // console.log(this.QAnum)
+    //     // console.log(res.data.obj.list)
     //   })
-    //       .catch(function () {
-    //         that.listParams.error = true;
-    //         that.listParams.loading = false;
-    //       });
     // },
+    getDemoList() {
+      this.FocusQaShow = false
+      var that = this;
+      console.log(this.QAnum)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaList',{page:this.listParams.pageNum,rows:this.listParams.pageSize,search_type:that.QAnum}).then(res=>{
+        console.log(res)
+        // this.listParams.pageNum = 1
+        if (res.status === 200){
+          if (res.data.obj.list.length > 0){
+                that.list = that.list.concat(res.data.obj.list);
+                this.data = res.data.obj.list
+            that.listParams.loading = false;
+            if (res.data.obj.list.length < that.listParams.pageSize) {
+              that.listParams.finished = true;
+              this.$message({
+                showClose: true,
+                message: '没有更多数据了哦',
+                type: 'warning'
+              });
+            }
+            // that.data = res.data
+            // that.list = that.data.obj.list
+            // console.log(res)
+          }else{
+            that.listParams.loading = false;
+            that.listParams.finished = true;
+          }
+        }
+        that.listParams.loading = false;
+      })
+          .catch(function () {
+            that.listParams.error = true;
+            that.listParams.loading = false;
+          });
+    },
     //获取我的提问
     getMyQa(){
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/getMyQa',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
-        // console.log(res.data.obj)
-        this.questionNum = res.data.obj.total
+      if (this.csToken != null){
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owQa/getMyQa',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
+          // console.log(res.data.obj)
+          this.questionNum = res.data.obj.total
+        })
+      }
+    },
+    getWhole(){
+      this.isActive = 1
+      this.QAnum = '0'
+      this.listParams.pageNum = 1
+      this.listParams.finished = false;
+      this.list = []
+      this.activeName = 'first'
+      this.getDemoList();
+    },
+    getFocusQa(){
+      this.FocusQaShow = true
+      this.isActive = 2
+      this.listParams.pageNum = 1
+      this.listParams.finished = false;
+      var that = this;
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFocus/getFocusQa',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
+        console.log(res)
+        this.list = []
+        if (res.status === 200){
+          if (res.data.obj.list.length > 0){
+            that.list = that.list.concat(res.data.obj.list);
+            this.data = res.data.obj.list
+            that.listParams.loading = false;
+            if (res.data.obj.list.length < that.listParams.pageSize) {
+              that.listParams.finished = true;
+              this.$message({
+                showClose: true,
+                message: '没有更多数据了哦',
+                type: 'warning'
+              });
+            }
+            // that.data = res.data
+            // that.list = that.data.obj.list
+            // console.log(res)
+          }else{
+            that.listParams.loading = false;
+            that.listParams.finished = true;
+          }
+        }
+        that.listParams.loading = false;
       })
+          .catch(function () {
+            that.listParams.error = true;
+            that.listParams.loading = false;
+          });
     }
   }
 }
 </script>
 
 <style scoped>
+#QA{
+  min-width: 1280px;
+}
 ul{
   padding: 0;
 }
@@ -595,5 +709,11 @@ a{
   font-weight: 600;
   color: #222226;
   line-height: 32px;
+}
+.type_title{
+  padding: 0 10px;
+  color: #888;
+  font-weight: 400;
+  font-size: 14px;
 }
 </style>

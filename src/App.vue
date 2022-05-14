@@ -40,6 +40,34 @@ export default {
   name: 'App',
   components: {
   },
+  beforeCreate() {
+    //判断是否登陆
+    var url = window.location.href;
+    var temp = url.split('?')[1];
+    var pram = new URLSearchParams('?'+temp);
+    // console.log(pram.get('csTmpTicket'));
+    let csTmpTicket = pram.get('csTmpTicket')
+    // console.log('------------');
+    console.log(this.$ajax.getItem("csToken"))
+    if(csTmpTicket != "" && csTmpTicket != null && csTmpTicket != undefined){
+      this.$ajax.post('https://sx.water-mind.com/cs_s/login/verifyTicket',{csTmpTicket:csTmpTicket}).then(res=>{
+        if (res.data.success === true){
+          console.log(res)
+          let TokenVal = res.data.obj
+          this.$ajax.setItem('csToken', TokenVal)
+          let newurl = url.split('?')[0]
+          window.location.replace(newurl);
+          location.reload();
+        }else{
+          this.loginurl = `https://sx.water-mind.com/cs_devise/#/login?uri=${url}`
+        }
+      })
+    }
+
+    this.$ajax.post('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
+      this.Current_user = res.data.obj.account
+    })
+  },
   methods:{
 
   }
@@ -48,6 +76,10 @@ export default {
 
 <style>
 @import url("https://at.alicdn.com/t/font_3164615_chbhzbp18p.css");
+h1,h2,h3,h4,h5,h6,ul{
+  margin: 0;
+  padding: 0;
+}
 body{
   margin: 0;
   padding: 0;
@@ -67,4 +99,7 @@ ul{
   list-style:none;
 }
 i ,em{font-style:normal }
+#app{
+  min-width: 1280px;
+}
 </style>

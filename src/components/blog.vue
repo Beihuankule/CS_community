@@ -66,7 +66,7 @@
               <div class="active_blog">
                 <div class="Community-item-active">
 <!--                  上方标题-->
-                  <router-link  to="/article" class="active_title">这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题</router-link >
+                  <router-link  :to="/article/+('item.id')" class="active_title">这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题</router-link >
 <!--                  下方内容-->
                   <div class="active_content">
 <!--                    左侧文章图片-->

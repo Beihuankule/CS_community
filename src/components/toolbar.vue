@@ -7,11 +7,11 @@
             <p class="logo_text">社区</p>
         </div>
         <div class="Navigation">
-          <router-link  to="/blog" >博客</router-link>
+          <router-link  to="/blog" :class="{active:activeShow === 'blog'}">博客</router-link>
           <router-link  to="/doc" >文档</router-link>
           <router-link  to="/practice" >练习</router-link>
           <router-link  to="/curriculum" >课程</router-link>
-          <router-link  to="/QA" >问答</router-link>
+          <router-link  to="/QA" :class="{active:activeShow === 'QA'}">问答</router-link>
           <router-link  to="/authentication" >认证</router-link>
           <router-link  to="/Search" >搜索</router-link>
         </div>
@@ -58,7 +58,7 @@
             <div class="el-icon-s-custom user"></div>
             <el-dropdown-menu slot="dropdown" class="dropdown">
               <div class="username">
-                <router-link to="/PersonalBlog">{{this.username}}</router-link>
+                <router-link :to='/PersonalBlog/+(this.username)'>{{this.username}}</router-link>
                 <span><i class="iconfont icon-icon-test2"></i></span>
               </div>
               <div class="user_data">
@@ -105,6 +105,8 @@
 </template>
 
 <script>
+// import {removeItem} from "../vue-storage";
+
 export default {
   name: "toolbar",
   data() {
@@ -115,6 +117,7 @@ export default {
       text: '',
       userdata:'',
       isShow:false,
+      activeShow:'',
       username:null,
       url:window.location.href,
       // toolbar_show:1,
@@ -133,6 +136,19 @@ export default {
     })
   },
   created() {
+    // console.log('----------')
+    let url = window.location.href
+    let temp = url.split('questions/')[1];
+    let articleTemp = url.split('article/')[1];
+    // console.log(temp)
+    if(this.$route.path === "/QA" || this.$route.path === `/questions/${temp}` ||
+        this.$route.path === "/newquestions" || this.$route.path === `/editquestions/${temp}`){
+      this.activeShow = 'QA'
+      // alert(1)
+    }else if (this.$route.path === "/blog" || this.$route.path === `/article/${articleTemp}` ||
+        this.$route.path === "/newArticle"){
+      this.activeShow = 'blog'
+    }
   },
   beforeMount() {
 
@@ -157,8 +173,13 @@ export default {
       this.loginurl = `https://sx.water-mind.com/cs_devise/#/login?uri=${this.url}`
     },
     login_quit(){
+      console.log("dddd")
       this.$ajax.post('https://sx.water-mind.com//cs_s/login/quit').then(res=>{
-        console.log(res.config.headers.csToken)
+        this.$ajax.removeItem('csToken');
+        this.$ajax.setItem('csToken',"")
+        this.$ajax.setItem('csToken', "");
+        console.log(this.$ajax.getItem('csToken'))
+        console.log(res)
         this.$message({
           message: '退出成功',
           type: 'success'
@@ -177,10 +198,14 @@ export default {
   display: flex;
   height: 48px;
   width: 100%;
+  min-width: 1280px;
   align-items: center;
   z-index: 200;
   background-color: white;
   box-shadow: 0 1px 4px 0 rgb(0 0 0 / 35%);
+}
+.logo{
+  min-width: 64px;
 }
 .username > span >i{
   font-size: 24px;
@@ -195,6 +220,9 @@ export default {
   width: 100%;
   justify-content: space-between;
   align-items: center;
+}
+.active{
+  border-top: 2px solid rgb(64,158,255);
 }
 .Left{
   display: flex;

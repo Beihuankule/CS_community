@@ -1,120 +1,120 @@
 <template>
-<div id="newArticle">
-  <toolbar/>
-  <div class="article_bg">
-    <div class="article_content">
-      <div class="article_content_title">
-        <div class="article_title">
-          <div class="pos-box">
-            <pre class="input__title_pre"></pre>
-            <div class="input__title">
-              <textarea  autocomplete="off" id="txtTitle" placeholder="请输入文章标题（5～100个字）" autofocus="autofocus" maxlength="100" class="el-textarea__inner" style="resize: none; min-height: 32px;"></textarea>
+  <div id="newArticle">
+    <toolbar/>
+    <div class="article_bg">
+      <div class="article_content">
+        <div class="article_content_title">
+          <div class="article_title">
+            <div class="pos-box">
+              <pre class="input__title_pre"></pre>
+              <div class="input__title">
+                <textarea v-model="textdata" autocomplete="off" id="txtTitle" :placeholder="title" autofocus="autofocus" maxlength="100" class="el-textarea__inner" style="resize: none; min-height: 32px;"></textarea>
+              </div>
             </div>
           </div>
         </div>
+        <div class="article_content_md">
+          <v-md-editor v-model="text"  height="800px"></v-md-editor>
+        </div>
       </div>
-      <div class="article_content_md">
-        <v-md-editor v-model="text"  height="800px"></v-md-editor>
-      </div>
-    </div>
-    <div class="article_attribute">
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="封面&摘要">
-          <div class="cover-count">
-            <div class="cover_head_img_box">
-              <el-upload
-                  action="#"
-                  :limit="1"
-                  list-type="picture-card"
-                  :auto-upload="false">
-                <i slot="default" class="el-icon-plus"></i>
-                <div slot="file" slot-scope="{file}">
-                  <img class="el-upload-list__item-thumbnail" :src="file.url" alt="">
-                  <span class="el-upload-list__item-actions">
-                      <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
-                        <i class="el-icon-zoom-in"></i>
-                      </span>
-                      <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleDownload(file)">
-                        <i class="el-icon-download"></i>
-                      </span>
-                      <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file)">
-                        <i class="el-icon-delete"></i>
-                      </span>
-                  </span>
-                </div>
-              </el-upload>
-              <el-dialog :visible.sync="dialogVisible" >
-                <img width="100%" :src="dialogImageUrl" alt="">
-              </el-dialog>
+      <div class="article_attribute">
+        <el-form ref="form" :model="form" label-width="80px">
+          <el-form-item label="封面&摘要">
+            <div class="cover-count">
+              <div class="cover_head_img_box">
+                <el-upload
+                    action="#"
+                    :limit="1"
+                    ref="upload"
+                    list-type="picture-card"
+                    :auto-upload="false"
+                    :file-list="uploadFiles"
+                    :on-change="loadJsonFromFile"
+                    :on-remove="handleRemove">
+                  <i class="el-icon-plus"></i>
+                </el-upload>
+                <!--              <el-dialog :visible.sync="dialogVisible" >-->
+                <!--                <img width="100%" :src="dialogImageUrl" alt="">-->
+                <!--              </el-dialog>-->
+              </div>
+              <div class="desc-box">
+                <el-input
+                    type="textarea"
+                    placeholder="请输入内容"
+                    v-model="textarea"
+                    :rows="6"
+                    resize="none"
+                    maxlength="256"
+                    show-word-limit
+                >
+                </el-input>
+              </div>
             </div>
-            <div class="desc-box">
-              <el-input
-                  type="textarea"
-                  placeholder="请输入内容"
-                  v-model="textarea"
-                  :rows="6"
-                  resize="none"
-                  maxlength="256"
-                  show-word-limit
-              >
-              </el-input>
-            </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="文章标签">
-          <el-radio-group v-model="form.label">
+          </el-form-item>
+          <el-form-item label="文章标签">
+            <el-radio-group v-model="form.label">
               <el-tag type="info" v-show="this.tagsvalue.length >= 1">{{tagsvalue[0]}}</el-tag>
               <el-tag type="info" v-show="this.tagsvalue.length >= 2">{{tagsvalue[1]}}</el-tag>
               <el-tag type="info" v-show="this.tagsvalue.length >= 3">{{tagsvalue[2]}}</el-tag>
-            <el-button  @click="mark_tags_box" class="tag__btn-tag"><i class="el-icon-plus"></i><span>添加文章标签</span></el-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="文章类型">
-          <el-radio-group v-model="form.Article_type">
-            <el-radio label="原创"></el-radio>
-            <el-radio label="转载"></el-radio>
-            <el-radio label="翻译"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="发布形式">
-          <el-radio-group v-model="form.Release">
-            <el-radio label="全部可见"></el-radio>
-            <el-radio label="仅我可见"></el-radio>
-            <el-radio label="粉丝可见"></el-radio>
-            <el-radio label="VIP可见"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="内容等级">
-          <el-radio-group v-model="form.Content_level">
-            <el-radio label="初级"></el-radio>
-            <el-radio label="中级"></el-radio>
-            <el-radio label="高级"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item class="right">
-          <el-button type="primary" >发布文章</el-button>
-          <el-button>取消</el-button>
-        </el-form-item>
-      </el-form>
-      <div class="mark_selection_box" v-show="mark_selection_box">
-        <div class="mark_selection_box_body_title">
-          标签 <span class="el-icon-close" @click="mark_selection_box = false"></span>
-        </div>
-        <el-select v-model="tagsvalue" :multiple-limit="3" :multiple="true" placeholder="请选择" >
-          <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-          </el-option>
-        </el-select>
-        <div>
-          <div>大工程，未完成</div>
-        </div>
+              <el-button  @click="dialogVisible = true" class="tag__btn-tag"><i class="el-icon-plus"></i><span>添加文章标签</span></el-button>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="文章类型">
+            <el-radio-group v-model="form.Article_type">
+              <el-radio label="原创"></el-radio>
+              <el-radio label="转载"></el-radio>
+              <el-radio label="翻译"></el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="发布形式">
+            <el-radio-group v-model="form.Release">
+              <el-radio label="全部可见"></el-radio>
+              <el-radio label="仅我可见"></el-radio>
+              <el-radio label="粉丝可见"></el-radio>
+              <el-radio label="VIP可见"></el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="内容等级">
+            <el-radio-group v-model="form.Content_level">
+              <el-radio label="初级"></el-radio>
+              <el-radio label="中级"></el-radio>
+              <el-radio label="高级"></el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item class="right">
+            <el-button type="primary" @click="newArticle">发布文章</el-button>
+            <el-button>取消</el-button>
+          </el-form-item>
+        </el-form>
+
+
+
+        <el-dialog
+            title="标签"
+            :visible.sync="dialogVisible"
+            width="30%"
+            :before-close="handleClose">
+          <el-select v-model="tagsvalue" :multiple-limit="3" :multiple="true" placeholder="请选择" >
+            <el-option
+                v-for="item in options"
+                :key="item.id"
+                :label="item.label_name"
+                :value="item.label_name">
+            </el-option>
+          </el-select>
+          <div class="el-tabs__content">
+            <div class="el-tab-pane">
+              <span class="el-tag el-tag--light"  v-for="item in options" :key="item.id" @click="addTag(item)">{{ item.label_name }}</span>
+            </div>
+          </div>
+          <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        </span>
+        </el-dialog>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -130,6 +130,9 @@ export default {
       dialogImageUrl: '',
       dialogVisible: false,
       disabled: false,
+      uploadFiles:[],
+      textdata:'',
+      title:'请输入文章标题（5～100个字）',
       //文章标签
       tagsvalue:[],
       mark_selection_box:false,
@@ -152,8 +155,8 @@ export default {
       }],
       form: {
         Article_type: '',
-        Content_level:'',
-        Release:'',
+        Content_level:'初级',
+        Release:'全部可见',
         label:'',
       },
       text:'\n' +
@@ -205,20 +208,80 @@ export default {
           '例如：以上就是今天要讲的内容，本文仅仅简单介绍了pandas的使用，而pandas提供了大量能使我们快速便捷地处理数据的函数和方法。',
     }
   },
+  beforeCreate() {
+    this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseLabel/getLabelData').then(res=>{
+      this.options = res.data.obj
+    })
+  },
   methods: {
-    handleRemove(file) {
-      console.log(file);
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
     },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
+    loadJsonFromFile(file, fileList) {
+      this.uploadFiles = fileList
     },
-    handleDownload(file) {
-      console.log(file);
+    newArticle(){
+      let cover_field = this.uploadFiles[0].raw
+      let article_grade = this.form.Content_level
+      let article_type = this.form.Article_type
+      let content = this.text
+      let cover_abstract = this.textarea
+      let Release = this.form.Release
+      let title = this.textdata
+      let label = ''
+      for (var i=0;i<this.tagsvalue.length;i++)
+      {
+        label =  label + this.tagsvalue[i] + '   '
+      }
+      console.log(cover_field)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}).then(res=>{
+        console.log(res)
+      })
+
+      // let fd = new FormData();
+      // fd.append(cover_field, this.uploadFiles[0].raw)
+      // fd.append(article_grade, this.form.Content_level)
+      // fd.append(article_type, this.form.Article_type)
+      // fd.append(content, this.text)
+      // fd.append(cover_abstract, this.textarea)
+      // fd.append(Release, this.form.Release)
+      // fd.append(title, this.textdata)
+      // fd.append(label, label)
+      //
+      //
+      // fetch('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle',{
+      //   method: 'post',
+      //   data: fd,
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     'csToken' : 'ef03c69993ff4459b6b81bc33820f47b'
+      //   }
+      // }).then(({ data }) => {
+      //   console.log(data)
+      // })
+      //
+
+      //
+      // //  console.log(title)
+      // //  console.log(article_grade)
+      // /*{cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}*/
+      // console.log(cover_field)
+      //  this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', fd).then(res=>{
+      //    console.log(res)
+      //  })
     },
-    mark_tags_box(){
-      this.mark_selection_box = true
+    handleClose(done) {
+      done();
     },
+    addTag(item){
+      console.log(this.tagsvalue.indexOf(item.label_name))
+      if (this.tagsvalue.length < 3 && this.tagsvalue.indexOf(item.label_name) === -1){
+
+        this.tagsvalue.push(item.label_name)
+      }
+
+      console.log(this.tagsvalue)
+    }
   }
 }
 </script>
@@ -399,8 +462,7 @@ export default {
   cursor: pointer;
 }
 .el-select{
-  width: 528px;
-  margin-left: 15px;
+  width: 100%;
   margin-bottom: 10px;
 }
 .el-select__tags{
@@ -421,5 +483,19 @@ span.el-tag.el-tag--info.el-tag--light {
 .right {
   display: flex;
   justify-content: flex-end;
+}
+.el-tab-pane > span{
+  padding: 0 8px;
+  height: 24px;
+  background-color: #ebf2f7;
+  border-radius: 2px;
+  font-weight: 400;
+  color: #507999;
+  line-height: 24px;
+  cursor: pointer;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  border: none;
+  font-size: 13px!important;
 }
 </style>

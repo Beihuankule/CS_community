@@ -3,9 +3,9 @@
   <toolbar/>
   <el-row type="flex"  justify="space-around" class="questions">
     <el-col :span="16" class="left">
-      <h5>标题</h5>
+      <h5 class="Q_title">标题</h5>
       <el-input v-model="input" placeholder="请输入内容"></el-input>
-      <h5>内容</h5>
+      <h5 class="Q_title">内容</h5>
       <div>
         <v-md-editor v-model="text"  height="500px"></v-md-editor>
       </div>
@@ -15,7 +15,7 @@
       <div class="mark_selection">
         <div class="mark_selection_title_el_tag">
           <span class="tips_tag">
-            <span class="span_add"><i class="el-icon-plus" @click="mark_tags_box"></i></span>
+            <span class="span_add"><i class="el-icon-plus" @click="dialogVisible = true"></i></span>
             <div v-show="this.tagsvalue.length">
               <el-tag type="info" v-show="this.tagsvalue.length >= 1">{{tagsvalue[0]}}</el-tag>
               <el-tag type="info" v-show="this.tagsvalue.length >= 2">{{tagsvalue[1]}}</el-tag>
@@ -25,22 +25,33 @@
           </span>
         </div>
       </div>
-      <div class="mark_selection_box" v-show="mark_selection_box">
-        <div class="mark_selection_box_body_title">
-          标签 <span class="el-icon-close" @click="mark_selection_box = false"></span>
-        </div>
+
+      <el-dialog
+          title="标签"
+          :visible.sync="dialogVisible"
+          width="30%"
+          :before-close="handleClose">
         <el-select v-model="tagsvalue" :multiple-limit="3" :multiple="true" placeholder="请选择" >
           <el-option
               v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              :key="item.id"
+              :label="item.label_name"
+              :value="item.label_name">
           </el-option>
         </el-select>
-        <div>
-          <div>大工程，未完成</div>
+        <div class="el-tabs__content">
+          <div class="el-tab-pane">
+            <span class="el-tag el-tag--light"  v-for="item in options" :key="item.id" @click="addTag(item)">{{ item.label_name }}</span>
+          </div>
         </div>
-      </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        </span>
+      </el-dialog>
+
+
+
       <div class="btns_wrap">
         <span @click="Submit">提交问题</span>
       </div>
@@ -59,6 +70,7 @@ export default {
   data() {
     return {
       input: '',
+      dialogVisible: false,
       text: '###### 问题遇到的现象和发生背景 \n' +
           '\n' +
           '###### 问题相关代码，请勿粘贴截图 \n' +
@@ -69,22 +81,7 @@ export default {
           '\n' +
           '###### 我想要达到的结果',
       mark_selection_box:false,
-      options: [{
-        value: 'JavaScript',
-        label: 'JavaScript'
-      }, {
-        value: 'HTMl5',
-        label: 'HTMl5'
-      }, {
-        value: 'Css3',
-        label: 'Css3'
-      }, {
-        value: 'PHP',
-        label: 'PHP'
-      }, {
-        value: 'MySql',
-        label: 'MySql'
-      }],
+      options: [],
       tagsvalue: [],
       data:''
     }
@@ -95,6 +92,9 @@ export default {
   beforeCreate() {
     this.$ajax.get('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
       this.data = res.data
+    })
+    this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseLabel/getLabelData').then(res=>{
+      this.options = res.data.obj
     })
   },
   methods:{
@@ -127,6 +127,18 @@ export default {
     mark_tags_box(){
       this.mark_selection_box = true
     },
+    handleClose(done) {
+            done();
+    },
+    addTag(item){
+      console.log(this.tagsvalue.indexOf(item.label_name))
+      if (this.tagsvalue.length < 3 && this.tagsvalue.indexOf(item.label_name) === -1){
+
+        this.tagsvalue.push(item.label_name)
+      }
+
+      console.log(this.tagsvalue)
+    }
   }
 }
 </script>
@@ -242,8 +254,7 @@ export default {
   cursor: pointer;
 }
 .el-select{
-  width: 528px;
-  margin-left: 15px;
+  width: 100%;
   margin-bottom: 10px;
 }
 .el-select__tags{
@@ -263,6 +274,33 @@ export default {
 }
 .v-md-editor{
   box-shadow:none;
+}
+.el-tabs__content{
+  padding: 9px 14px 12px;
+  height: 260px;
+  overflow-y: auto;
+  border-radius: 0 0 4px 0;
+}
+.el-tab-pane{
+  box-sizing: border-box;
+  font-family: PingFang SC,Hiragino Sans GB,Arial,Microsoft YaHei,Verdana,Roboto,Noto,Helvetica Neue,sans-serif;
+}
+.el-tab-pane > span{
+  padding: 0 8px;
+  height: 24px;
+  background-color: #ebf2f7;
+  border-radius: 2px;
+  font-weight: 400;
+  color: #507999;
+  line-height: 24px;
+  cursor: pointer;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  border: none;
+  font-size: 13px!important;
+}
+.Q_title{
+  margin:20px 10px;
 }
 
 

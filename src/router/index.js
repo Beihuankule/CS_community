@@ -37,12 +37,12 @@ let routes = [     // 打造路由规则
     },
     {
         name:'article',
-        path:'/article',
+        path:'/article/:id',
         component:article,
     },
     {
         name:'PersonalBlog',
-        path:'/PersonalBlog',
+        path:'/PersonalBlog/:id',
         component:PersonalBlog,
     },
     {

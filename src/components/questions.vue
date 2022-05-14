@@ -44,8 +44,8 @@
           />
           <!--        写回答-->
           <ul class="answer">
-            <li class="answer_span">
-              <span @click="gotomd_answer"><i class="el-icon-edit"></i> 写回答</span>
+            <li class="answer_span ">
+              <span @click="gotomd_answer" class="btn-bg"><i class="el-icon-edit"></i> 写回答</span>
             </li>
             <li class="thumbs_up" id="dianzan" @click="dianzan(qaid)" v-show="problemDzShow === 'wdz'"><span><i class="iconfont icon-dianzan"></i> 好问题 <em>{{old_fabulous_num}}</em></span></li>
             <li class="thumbs_up" id="qxdianzan" @click="rem_dianzan(qaid)" v-show="problemDzShow === 'dz'"><span><i class="iconfont icon-dianzan1"></i> 好问题 <em>{{ old_fabulous_num }}</em></span></li>
@@ -698,13 +698,14 @@ h1,h2,h3,h4,h5,h6{
 .answer_span > span{
   width: 94px;
   height: 32px;
-  background: #409EFF;
+  /*background: #409EFF;*/
+  border: 1px solid #409EFF;
   border-radius: 16px;
   font-size: 14px;
   font-weight: 400;
   text-align: center;
   line-height: 32px;
-  color: #fff;
+  color: #409EFF;
   display: flex;
   -webkit-box-align: center;
   align-items: center;
@@ -785,7 +786,7 @@ h1,h2,h3,h4,h5,h6{
   display: block !important;
 }
 .ask-comment-form {
-  min-width: 700px;
+  width: 100%;
 }
 .del > span{
   color: red;
@@ -794,7 +795,7 @@ h1,h2,h3,h4,h5,h6{
   color: #409EFF;
 }
 .reply_box {
-  min-width: 664px;
+  width: 100%;
   display: none;
   margin-bottom: 40px;
 }
@@ -829,6 +830,10 @@ h1,h2,h3,h4,h5,h6{
 }
 .m-btm{
   margin-bottom: 20px;
+}
+.btn-bg{
+  background-color: #409EFF;
+  color: #fff !important;
 }
 </style>
 
@@ -1127,6 +1132,7 @@ a{
 }
 .answer-wap > div{
   margin-top: 5px;
+  width: calc(100% - 34px);
 }
 .answer-wap > span > a >.avatar,.comment_list > .avatar-box > .avatar{
   margin-right: 0;
