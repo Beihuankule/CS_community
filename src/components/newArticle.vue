@@ -26,13 +26,18 @@
                     action="#"
                     :limit="1"
                     ref="upload"
+                    accept=".jpg,.jpeg,.png,.JPG,.PNG"
+                    :http-request="httpRequest"
+                    :before-upload="beforeUpload"
                     list-type="picture-card"
                     :auto-upload="false"
                     :file-list="uploadFiles"
+                    :on-exceed="handleExceed"
                     :on-change="loadJsonFromFile"
                     :on-remove="handleRemove">
                   <i class="el-icon-plus"></i>
                 </el-upload>
+<!--                :headers="imgUpload.headers"-->
                 <!--              <el-dialog :visible.sync="dialogVisible" >-->
                 <!--                <img width="100%" :src="dialogImageUrl" alt="">-->
                 <!--              </el-dialog>-->
@@ -131,6 +136,7 @@ export default {
       dialogVisible: false,
       disabled: false,
       uploadFiles:[],
+      fileList: [],
       textdata:'',
       title:'请输入文章标题（5～100个字）',
       //文章标签
@@ -154,17 +160,12 @@ export default {
         label: 'MySql'
       }],
       form: {
-        Article_type: '',
+        Article_type: '原创',
         Content_level:'初级',
         Release:'全部可见',
         label:'',
       },
       text:'\n' +
-          '> 提示：文章写完后，目录可以自动生成\n' +
-          '\n' +
-          '\n' +
-          '---\n' +
-          '\n' +
           '# 前言\n' +
           '`提示：这里可以添加本文要记录的大概内容：`\n' +
           '\n' +
@@ -214,6 +215,22 @@ export default {
     })
   },
   methods: {
+    httpRequest(option) {
+      this.fileList.push(option)
+    },
+    beforeUpload(file) {
+      let fileSize = file.size
+      const FIVE_M= 5*1024*1024;
+      //大于5M，不允许上传
+      if(fileSize>FIVE_M){
+        this.$message.error("最大上传5M")
+        return  false
+      }
+      return true
+    },
+    handleExceed() {
+      this.$message({ type: 'error', message: '最多支持1张封面图片上传' })
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
@@ -237,6 +254,8 @@ export default {
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}).then(res=>{
         console.log(res)
       })
+      // this.$refs.upload.submit()
+      // console.log(this.$refs.upload)
 
       // let fd = new FormData();
       // fd.append(cover_field, this.uploadFiles[0].raw)
