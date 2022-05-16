@@ -17,7 +17,7 @@
           <div class="user_info">
             <div class="user_info_name">
               <a href="">
-                <span class="name">双龙</span>
+                <span class="name">{{ data.create_user }}</span>
               </a>
             </div>
             <div class="user_info-name">
@@ -109,17 +109,22 @@
         <div class="article-header">
 <!--          标题-->
           <div class="article-title-box">
-            <h1>axios发送请求时如何携带token </h1>
+            <h1>{{data.title}} </h1>
           </div>
 <!--          版权信息-->
           <div class="article-info-box">
             <div class="article-bar-top">
-              <i>[图片]</i>
+              <el-tag
+                  class="m-right"
+                  type="danger"
+                  effect="dark">
+                {{ data.article_type }}
+              </el-tag>
               <div class="Article_Information">
 <!--                作者姓名-->
-                <a href="">双龙</a>
+                <a href="">{{ data.create_user }}</a>
 <!--                更新时间-->
-                <span><i class="el-icon-time"></i> 于 2022-04-27 17:57:10 发布</span>
+                <span><i class="el-icon-time"></i> 于 {{ data.create_date }} 发布</span>
                 <span><i class="el-icon-view"></i> 200</span>
                 <span><i class="el-icon-star-off"></i> 收藏</span>
               </div>
@@ -127,8 +132,13 @@
             <div class="blog-tags-box">
               <div class="tags-box">
                 <span>文章标签:</span>
-                <a href="">前端</a>
-                <a href="">后端</a>
+                <a href="">{{ data.label }}</a>
+              </div>
+              <div>
+                <router-link  :to='/editArticle/+(articleId)' target=“_blank” class="edit">
+                  <span >编辑</span>
+                </router-link>
+                <span @click="delArticle" class="del">删除</span>
               </div>
             </div>
           </div>
@@ -137,7 +147,7 @@
         <article class="ArticleContent">
           <mavon-editor
               class="md"
-              :value="webDataString"
+              :value="data.content"
               :subfield="false"
               :defaultOpen="'preview'"
               :toolbarsFlag="false"
@@ -155,7 +165,7 @@
               <div class="profile-box">
                 <a href="" class="profile-href">
                   <img class="profile-img" src="https://www.beihuankule.com/media/avatars/7.png" alt="">
-                  <span class="profile-name">双龙</span>
+                  <span class="profile-name">{{ data.create_user }}</span>
                 </a>
               </div>
               <div class="profile-attend">
@@ -202,14 +212,14 @@
 <!--          输入框-->
           <div class="comment">
             <el-input placeholder="请发表有价值的评论， 博客评论不欢迎灌水，良好的社区氛围需大家一起维护。" v-model="comment">
-              <template slot="append">评论</template>
+              <el-button slot="append" @click="releaseComment">评论</el-button>
             </el-input>
           </div>
         </div>
 <!--        评论列表-->
-        <div class="comment-list-container">
+        <div class="comment-list-container" >
           <div class="comment-list-box">
-            <ul class="comment-list">
+            <ul class="comment-list" v-for="(item,index) in commentObj" :key="index">
 <!--              主评论-->
               <li class="comment-line-box">
                 <div class="comment-list-item">
@@ -219,20 +229,21 @@
                   <div class="comment-list-right">
                     <div class="comment-top">
                       <div class="user-box">
-                        <a href=""><span class="user_name">梦幻小子</span></a>
-                        <span>2022.04.28</span>
+                        <a href=""><span class="user_name">{{ item.user_id }}</span></a>
+                        <span>{{ item.create_date }}</span>
                       </div>
                       <div class="comment-like">
-                        <span @click="reply_input = !reply_input"><i class="el-icon-chat-line-square"></i> 回复 </span>
+                        <span @click="delComment(item.id)" class="del">删除</span>
+                        <span @click="commentArticle(item.id)"><i class="el-icon-chat-line-square"></i> 回复 </span>
                         <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
                       </div>
                     </div>
                     <div class="comment-center">
-                      <div class="new-comment">点赞评论加关注</div>
+                      <div class="new-comment">{{ item.content }}</div>
                     </div>
-                    <div class="reply_input" v-show="reply_input">
-                      <el-input placeholder="回复@梦幻小子" v-model="comment">
-                        <template slot="append">回复</template>
+                    <div class="reply_input"  :class="{'isShow':isShow === item.id}">
+                      <el-input :placeholder="('回复@' + item.create_user)" v-model="replyText">
+                        <el-button slot="append" @click="reply">回复</el-button>
                       </el-input>
                     </div>
                   </div>
@@ -240,43 +251,8 @@
               </li>
 <!--              子评论-->
               <li class="replay-box">
-                <ul>
-                </ul>
-              </li>
-            </ul>
-            <ul class="comment-list">
-              <!--              主评论-->
-              <li class="comment-line-box">
-                <div class="comment-list-item">
-                  <!--                  评论人头像-->
-                  <a href="" class="comment-list-href"><img src="https://www.beihuankule.com/media/avatars/7.png" alt="" class="avatar"></a>
-                  <!--                  评论内容-->
-                  <div class="comment-list-right">
-                    <div class="comment-top">
-                      <div class="user-box">
-                        <a href=""><span class="user_name">梦幻小子</span></a>
-                        <span>2022.04.28</span>
-                      </div>
-                      <div class="comment-like">
-                        <span @click="reply_input = !reply_input"><i class="el-icon-chat-line-square"></i> 回复 </span>
-                        <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
-                      </div>
-                    </div>
-                    <div class="comment-center">
-                      <div class="new-comment">点赞评论加关注</div>
-                    </div>
-                    <div class="reply_input" v-show="reply_input">
-                      <el-input placeholder="回复@梦幻小子" v-model="comment">
-                        <template slot="append">回复</template>
-                      </el-input>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <!--              子评论-->
-              <li class="replay-box">
-                <ul>
-                  <li class="comment-line-box">
+                <ul >
+                  <li class="comment-line-box" v-for="(key,index) in commentObj[index].children"  :key="index">
                     <div class="comment-list-item">
                       <!--                  评论人头像-->
                       <a href="" class="comment-list-href"><img src="https://www.beihuankule.com/media/avatars/7.png" alt="" class="avatar"></a>
@@ -284,47 +260,21 @@
                       <div class="comment-list-right">
                         <div class="comment-top">
                           <div class="user-box">
-                            <a href=""><span class="user_name">梦幻小子</span></a>
-                            <span>2022.04.28</span>
+                            <a href=""><span class="user_name">{{ key.user_id }}</span></a><a href=""><span class="user_name">@ {{ key.reply_user_id }}</span></a>
+                            <span>{{ key.create_date }}</span>
                           </div>
                           <div class="comment-like">
-                            <span @click="reply_input = !reply_input"><i class="el-icon-chat-line-square"></i> 回复 </span>
+                            <span @click="delComment(key.id)" class="del">删除</span>
+                            <span @click="isShow = key.id"><i class="el-icon-chat-line-square"></i> 回复 </span>
                             <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
                           </div>
                         </div>
                         <div class="comment-center">
-                          <div class="new-comment">点赞评论加关注</div>
+                          <div class="new-comment">{{key.content}}</div>
                         </div>
-                        <div class="reply_input" v-show="reply_input">
-                          <el-input placeholder="回复@梦幻小子" v-model="comment">
-                            <template slot="append">回复</template>
-                          </el-input>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                  <li class="comment-line-box">
-                    <div class="comment-list-item">
-                      <!--                  评论人头像-->
-                      <a href="" class="comment-list-href"><img src="https://www.beihuankule.com/media/avatars/7.png" alt="" class="avatar"></a>
-                      <!--                  评论内容-->
-                      <div class="comment-list-right">
-                        <div class="comment-top">
-                          <div class="user-box">
-                            <a href=""><span class="user_name">梦幻小子</span></a>
-                            <span>2022.04.28</span>
-                          </div>
-                          <div class="comment-like">
-                            <span @click="reply_input = !reply_input"><i class="el-icon-chat-line-square"></i> 回复 </span>
-                            <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
-                          </div>
-                        </div>
-                        <div class="comment-center">
-                          <div class="new-comment">点赞评论加关注</div>
-                        </div>
-                        <div class="reply_input" v-show="reply_input">
-                          <el-input placeholder="回复@梦幻小子" v-model="comment">
-                            <template slot="append">回复</template>
+                        <div class="reply_input"  :class="{'isShow':isShow === key.id}">
+                          <el-input :placeholder="('回复@' + key.user_id)" v-model="replyText">
+                            <el-button slot="append" @click="reply">回复</el-button>
                           </el-input>
                         </div>
                       </div>
@@ -347,199 +297,73 @@ export default {
   name: "Article",
   data(){
     return{
+      data:'',
+      commentObj:'',
+      isShow:'',
+      replyText:'',
       reply_input:false,
       comment:'',
-      webDataString:'#### 1.创建一个 axios1.js 在axios1中进行如下配置:\n' +
-          '```javascript\n' +
-          'import axios from "axios"; //引入官方的axios\n' +
-          '```\n' +
-          '```javascript\n' +
-          'axios.defaults.withCredentials = true //开启请求时携带token\n' +
-          '```\n' +
-          '```javascript\n' +
-          'import qs from \'qs\';//处理参数\n' +
-          '```\n' +
-          '```javascript\n' +
-          'import router from "./router"; //引入路由,新建一个router目录,在目录下创建一个index.js进行路由配置\n' +
-          '```\n' +
-          '#### 2.新建一个 vue-storage.js:\n' +
-          '在vue-storage.js中写入如下代码\n' +
-          '```javascript\n' +
-          'import VueCookies from \'vue-cookies\'; //引入vue-cookies\n' +
-          '\n' +
-          'export const getItem = (name) => {\n' +
-          '    // const data = window.localStorage.getItem(name);\n' +
-          '    const data = VueCookies.get(name);\n' +
-          '    try {\n' +
-          '        return JSON.parse(data);\n' +
-          '    } catch (err) {\n' +
-          '        return data;\n' +
-          '    }\n' +
-          '};\n' +
-          '\n' +
-          'export const setItem = (name, value) => {\n' +
-          '    if (typeof value === "object") {\n' +
-          '        value = JSON.stringify(value);\n' +
-          '    }\n' +
-          '    // window.localStorage.setItem(name, value);\n' +
-          '    VueCookies.set(name, value);\n' +
-          '};\n' +
-          '\n' +
-          'export const removeItem = (name) => {\n' +
-          '    // window.localStorage.removeItem(name);\n' +
-          '    VueCookies.remove(name);\n' +
-          '};\n' +
-          '\n' +
-          '```\n' +
-          '\n' +
-          '#### 3.在我们自己的axios(axios1.js)中引入刚刚写好的vue-storage.js\n' +
-          '```javascript\n' +
-          'import {\n' +
-          '    getItem,\n' +
-          '    removeItem,\n' +
-          '    setItem\n' +
-          '} from \'./vue-storage.js\';\n' +
-          '```\n' +
-          '#### 4.按需是否引入:\n' +
-          '//非必要文件\n' +
-          '```javascript\n' +
-          'import {\n' +
-          '    Notification\n' +
-          '} from \'element-ui\';\n' +
-          '```\n' +
-          '#### 5.配置请求路径:\n' +
-          '```javascript\n' +
-          'const baseURL = "https://xx.xxxxxx.xxx/";\n' +
-          'const request = axios.create({\n' +
-          '    baseURL: baseURL,\n' +
-          '});\n' +
-          '```\n' +
-          '#### 6.设置请求拦截器:\n' +
-          '```javascript\n' +
-          '// 请求拦截器\n' +
-          '//按照项目实际情况进行配置\n' +
-          'request.interceptors.request.use(\n' +
-          '    function(config) {\n' +
-          '        config.headers[\'content-type\'] = \'application/x-www-form-urlencoded\';\n' +
-          '        if(config.url != \'/login/loginAP\'){\n' +
-          '            config.headers[\'Token\'] = getItem(\'Token\');\n' +
-          '        }\n' +
-          '        return config;\n' +
-          '    },\n' +
-          '    function(error) {\n' +
-          '        return Promise.reject(error);\n' +
-          '    }\n' +
-          ');\n' +
-          '\n' +
-          '\n' +
-          'request.interceptors.response.use(\n' +
-          '    // 在2xx范围内的任何状态代码都会触发此函数，这里主要用于处理响应数据\n' +
-          '    (response) => {\n' +
-          '        return response;\n' +
-          '    },\n' +
-          '    // 任何超出2xx范围的状态码都会触发此函数，这里主要用于处理响应错误\n' +
-          '    (error) => {\n' +
-          '        if(error == \'Error: Network Error\'){\n' +
-          '            Notification({\n' +
-          '                title: \'错误\',\n' +
-          '                message: "错误",\n' +
-          '                type: \'error\'\n' +
-          '            });\n' +
-          '            return Promise.reject( {success:false,msg:"网络异常"});\n' +
-          '        } else {\n' +
-          '            if(error.response == undefined){\n' +
-          '                setTimeout(function() {\n' +
-          '                    router.replace(\'/login\')\n' +
-          '                }, 500);\n' +
-          '                return;\n' +
-          '            }\n' +
-          '            const {\n' +
-          '                status,\n' +
-          '                data,\n' +
-          '            } = error.response;\n' +
-          '            if (status == 500) {\n' +
-          '                if (data.success == false) {\n' +
-          '                    if (data.obj.code == \'error0002\') {\n' +
-          '                        removeItem("Token");\n' +
-          '                        Notification({\n' +
-          '                            title: \'错误\',\n' +
-          '                            message: data.obj.message,\n' +
-          '                            type: \'error\'\n' +
-          '                        });\n' +
-          '                        console.log("错误输出！");\n' +
-          '                        setTimeout(function() {\n' +
-          '                            router.replace(\'/login\')\n' +
-          '                        }, 500);\n' +
-          '                    } else if (data.obj.code == \'error9999\') {\n' +
-          '                        return Promise.reject(data);\n' +
-          '\n' +
-          '                    }\n' +
-          '                }\n' +
-          '            }\n' +
-          '            // 将未处理的异常往外抛\n' +
-          '            return Promise.reject(error);\n' +
-          '        }\n' +
-          '\n' +
-          '    }\n' +
-          ');\n' +
-          '\n' +
-          'const post = function(url, data) {\n' +
-          '    return request({\n' +
-          '        method: "post",\n' +
-          '        url: url,\n' +
-          '        data: qs.stringify(data)\n' +
-          '    });\n' +
-          '}\n' +
-          'const get = function(url, data) {\n' +
-          '    return request({\n' +
-          '        method: "get",\n' +
-          '        url: url,\n' +
-          '        data: qs.stringify(data)\n' +
-          '    });\n' +
-          '}\n' +
-          '\n' +
-          'const updateFile = function(url, params) {\n' +
-          '    return axios.post(baseURL + url, params, {\n' +
-          '        headers: {\n' +
-          '            \'Content-Type\': \'multipart/form-data\',\n' +
-          '            \'Token\': getItem(\'Token\')\n' +
-          '        }\n' +
-          '    });\n' +
-          '}\n' +
-          '\n' +
-          'export default {\n' +
-          '    post,\n' +
-          '    get,\n' +
-          '    updateFile,\n' +
-          '    getItem,\n' +
-          '    removeItem,\n' +
-          '    setItem,\n' +
-          '    baseURL\n' +
-          '};\n' +
-          '```\n' +
-          '\n' +
-          '------------\n' +
-          '\n' +
-          '我们自己的axios相关配置完毕\n' +
-          '\n' +
-          '#### 接着在全局main.js进行引入即可:\n' +
-          '```javascript\n' +
-          'import Vue from \'vue\'\n' +
-          'import axios1 from \'./axios1\'\n' +
-          '\n' +
-          'Vue.prototype.$ajax= axios1//此处不可使用axios进行命名,请使用其他名称挂载到vue原型上\n' +
-          '```\n' +
-          '\n' +
-          '#### 在需要的组件中使用:\n' +
-          '```javascript\n' +
-          'this.$ajax.get(post)发送相关请求//$ajax为main.js中自定义方法名\n' +
-          '```\n' +
-          '相关阅读:[vue框架如何配置虚拟域名](https://www.beihuankule.com/article/39/ "vue框架如何配置虚拟域名")',
+      Current_user:'',
+      articleId:'',
     }
   },
   components: {
     toolbar
   },
+  beforeCreate() {
+    //判断是否登陆
+    this.$ajax.post('https://sx.water-mind.com/cs_s/login/getLoginInfo').then(res=>{
+      this.Current_user = res.data.obj.account
+    })
+  },
+  created() {
+    this.geturl();
+    this.getArticle();
+  },
+  methods:{
+    //获取当前博客文章id
+    geturl(){
+      let url = window.location.href;
+      this.articleId = url.slice(url.indexOf('#')+10)
+      console.log('文章ID：')
+      console.log(this.articleId);
+    },
+    getArticle(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLoginBlog/getBlogArticleById',{id:this.articleId}).then(res=>{
+        console.log('文章详情：')
+        this.data = res.data.obj.blogArticleObj
+        console.log(res.data.obj.blogArticleObj)
+        console.log('评论详情')
+        console.log(res.data.obj.commentObj)
+        this.commentObj = res.data.obj.commentObj
+      })
+    },
+    //评论
+    releaseComment(){
+      console.log(this.comment)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addComment',{article_id:this.articleId,content:this.comment}).then(res=>{
+        console.log(res)
+      })
+    },
+    //回复输入框
+    commentArticle(id){
+      this.isShow = id
+      console.log(id)
+    },
+    reply(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addComment',{article_id:this.articleId,content:this.replyText,sup_comment_id:this.isShow}).then(res=>{
+        console.log(res)
+      })
+    },
+    delArticle(){
+
+    },
+    delComment(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/delComment',{id:id}).then(res=>{
+        console.log(res)
+      })
+    }
+  }
 }
 </script>
 
@@ -736,8 +560,9 @@ dl{
   color: #555666;
 }
 .blog-tags-box{
-  padding-left: 48px;
+  padding-left: 62px;
   display: flex;
+  justify-content: space-between;
 }
 .tags-box{
   font-size: 14px;
@@ -890,6 +715,9 @@ dl{
   min-height: 60px;
   margin-top: 12px;
 }
+.isShow{
+  display: block !important;
+}
 .comment-list-item{
   display: flex;
   width: 100%;
@@ -943,6 +771,7 @@ dl{
 }
 .reply_input{
   margin-top: 10px;
+  display: none;
 }
 .replay-box{
   padding-left: 32px;
@@ -953,5 +782,29 @@ dl{
 }
 .comment-list:last-child{
   border-bottom:none;
+}
+.m-right{
+  margin-right: 14px;
+}
+.edit{
+  user-select: none;
+  margin-right: 16px;
+  font-size: 14px;
+  color: #777888;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+}
+.edit > span{
+  color: #409EFF;
+}
+.del{
+  user-select: none;
+  margin-right: 16px;
+  font-size: 14px;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  color:red;
 }
 </style>

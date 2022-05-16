@@ -318,6 +318,7 @@ export default {
         // console.log('好问题')
         // console.log(res.data.obj.qaContentObj)
         // console.log(res.data.obj.answerObj)
+        console.log(res)
         this.follow = res.data.obj.qaContentObj.is_focus
         console.log(this.follow)
         if (res.data.obj.answerObj !== null){

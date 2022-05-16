@@ -2,7 +2,7 @@
   <div id="blog">
     <toolbar/>
     <div class="blog_bg">
-      <div class="home_wrap">
+      <div class="home_wrap" >
 <!--        头部区域-->
         <div class="blog_nav">
           <div class="blog-nav-box">
@@ -59,73 +59,41 @@
           </div>
         </div>
 <!--        内容区域-->
-        <div class="blog_index">
-          <div class="left">
+        <div class="blog_index" >
+          <div class="left" v-infinite-scroll="onLoad"
+               infinite-scroll-distance="1"
+               infinite-scroll-immediate-check="false"
+               infinite-scroll-disabled="false"
+               infinite-scroll-immediate="true">
 <!--            文章列表-->
             <div class="Community">
-              <div class="active_blog">
+              <div class="active_blog" v-for="(item,index) in list"  :key="index">
                 <div class="Community-item-active">
 <!--                  上方标题-->
-                  <router-link  :to="/article/+('item.id')" class="active_title">这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题</router-link >
+                  <router-link  :to="/article/+(item.id)" class="active_title">{{item.title}}</router-link >
 <!--                  下方内容-->
                   <div class="active_content">
 <!--                    左侧文章图片-->
                     <div class="active_left">
-                      <router-link  to="/article" >
+                      <router-link  :to="/article/+(item.id)" >
                         <img src="https://img2.baidu.com/it/u=3542822865,178316978&fm=253&fmt=auto&app=138&f=JPEG?w=412&h=186" alt="">
                       </router-link>
                     </div>
 <!--                    内容简介-->
                     <div class="active_right">
-                      <router-link  to="/article">
+                      <router-link  :to="/article/+(item.id)">
                         <p>
-                          WCAG为对比可访问性制定了指导方针，以帮助UI / UX设计师和开发人员实现不同级别的可访问性。您可以使用以下检查器来验证应用程序中这些指导方针的实现。WCAG为对比可访问性制定了指导方针，以帮助UI / UX设计师和开发人员实现不同级别的可访问性。您可以使用以下检查器来验证应用程序中这些指导方针的实现。
+                          {{item.cover_abstract}}
                         </p>
                       </router-link>
                       <div class="operation">
                         <div class="operation_icon">
                           <p><i class="iconfont icon-dianzan"></i> 1.2K 赞</p>
-                          <p><i class="iconfont icon-cai"></i> 踩</p>
+                          <p><i class="el-icon-time"></i> {{ item.create_date }}</p>
                         </div>
                         <div>
                           <a href="">
-                            <span class="user_name">测试的名字还是叫双龙</span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="Community">
-              <div class="active_blog">
-                <div class="Community-item-active">
-                  <!--                  上方标题-->
-                  <router-link  to="/article" class="active_title">这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题这是一个标题</router-link >
-                  <!--                  下方内容-->
-                  <div class="active_content">
-                    <!--                    左侧文章图片-->
-                    <div class="active_left">
-                      <router-link  to="/article" >
-                        <img src="https://img2.baidu.com/it/u=3542822865,178316978&fm=253&fmt=auto&app=138&f=JPEG?w=412&h=186" alt="">
-                      </router-link>
-                    </div>
-                    <!--                    内容简介-->
-                    <div class="active_right">
-                      <router-link  to="/article">
-                        <p>
-                          WCAG为对比可访问性制定了指导方针，以帮助UI / UX设计师和开发人员实现不同级别的可访问性。您可以使用以下检查器来验证应用程序中这些指导方针的实现。WCAG为对比可访问性制定了指导方针，以帮助UI / UX设计师和开发人员实现不同级别的可访问性。您可以使用以下检查器来验证应用程序中这些指导方针的实现。
-                        </p>
-                      </router-link>
-                      <div class="operation">
-                        <div class="operation_icon">
-                          <p><i class="iconfont icon-dianzan"></i> 1.2K 赞</p>
-                          <p><i class="iconfont icon-cai"></i> 踩</p>
-                        </div>
-                        <div>
-                          <a href="">
-                            <span class="user_name">测试的名字还是叫双龙</span>
+                            <span class="user_name">{{ item.create_user }}</span>
                           </a>
                         </div>
                       </div>
@@ -268,6 +236,74 @@ export default {
   name: 'blog',
   components: {
     toolbar
+  },
+  data() {
+    return {
+      data:[],
+      list:[],
+      listParams: {
+        pageNum: 1,
+        pageSize:10,
+        loading: false,
+        error: false,
+        finished: false,
+      },
+    }
+  },
+  created() {
+    this.getDemoList();
+
+  },
+  computed: {
+    disabled() {
+      // console.log(
+      //     this.listParams.loading || this.listParams.finished
+      // );
+      return this.listParams.loading || this.listParams.finished;
+    },
+  },
+  methods:{
+    getDemoList(){
+      var that = this;
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLoginBlog/getBlogList',{page:this.listParams.pageNum,rows:this.listParams.pageSize}).then(res=>{
+        console.log(res)
+        // this.listParams.pageNum = 1
+        if (res.status === 200){
+          if (res.data.obj.list.length > 0){
+            that.list = that.list.concat(res.data.obj.list);
+            this.data = res.data.obj.list
+            that.listParams.loading = false;
+            if (res.data.obj.list.length < that.listParams.pageSize) {
+              that.listParams.finished = true;
+              this.$message({
+                showClose: true,
+                message: '没有更多数据了哦',
+                type: 'warning'
+              });
+            }
+            // that.data = res.data
+            // that.list = that.data.obj.list
+            // console.log(res)
+          }else{
+            that.listParams.loading = false;
+            that.listParams.finished = true;
+          }
+        }
+        that.listParams.loading = false;
+      })
+          .catch(function () {
+            that.listParams.error = true;
+            that.listParams.loading = false;
+          });
+      },
+    onLoad() {
+      this.listParams.loading = true;
+      if (this.listParams.finished === false) {
+        this.listParams.pageNum++;
+        // alert(1)
+        this.getDemoList();
+      }
+    },
   }
 
 };
@@ -415,7 +451,7 @@ a {
 .operation{
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 .operation_icon{
   display: flex;

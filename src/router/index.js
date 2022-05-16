@@ -14,6 +14,7 @@ import questions  from '../components/questions.vue'//问题
 import login  from '../components/login.vue'//登陆页面
 import authentication  from '../components/authentication.vue'//认证页面
 import QA  from '../components/QA.vue'//问答页面
+import editArticle from '../components/editArticle.vue'//修改文章
 import curriculum  from '../components/curriculum.vue'//课程页面
 import practice  from '../components/practice.vue'//练习页面
 import Nopage  from '../components/err.vue'   // 引入找不到路径的时候展示的页面
@@ -49,6 +50,11 @@ let routes = [     // 打造路由规则
         name:'editquestions',
         path:'/editquestions/:id',
         component:editquestions,
+    },
+    {
+        name:'editArticle',
+        path:'/editArticle/:id',
+        component:editArticle,
     },
     {
         name:'newArticle',

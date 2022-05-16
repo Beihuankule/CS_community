@@ -200,7 +200,7 @@ export default {
   width: 100%;
   min-width: 1280px;
   align-items: center;
-  z-index: 200;
+  z-index: 1999;
   background-color: white;
   box-shadow: 0 1px 4px 0 rgb(0 0 0 / 35%);
 }

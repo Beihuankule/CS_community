@@ -238,20 +238,28 @@ export default {
       this.uploadFiles = fileList
     },
     newArticle(){
-      let cover_field = this.uploadFiles[0].raw
+      // let cover_field = this.uploadFiles[0].raw
+      //文章等级
       let article_grade = this.form.Content_level
+      //文章类型
       let article_type = this.form.Article_type
+      //内容
       let content = this.text
+      //摘要
       let cover_abstract = this.textarea
-      let Release = this.form.Release
+      //发布形式
+      let release_type = this.form.Release
+      //标题
       let title = this.textdata
+      //标签
       let label = ''
       for (var i=0;i<this.tagsvalue.length;i++)
       {
         label =  label + this.tagsvalue[i] + '   '
       }
-      console.log(cover_field)
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}).then(res=>{
+      console.log(release_type)
+      // console.log(cover_field)
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {article_grade,article_type,content,cover_abstract,release_type,title,label}).then(res=>{
         console.log(res)
       })
       // this.$refs.upload.submit()
