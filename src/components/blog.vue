@@ -70,31 +70,29 @@
               <div class="active_blog" v-for="(item,index) in list"  :key="index">
                 <div class="Community-item-active">
 <!--                  上方标题-->
-                  <router-link  :to="/article/+(item.id)" class="active_title">{{item.title}}</router-link >
+                  <router-link  :to="/article/+(item.id)" class="active_title" target="_blank">{{item.title}}</router-link >
 <!--                  下方内容-->
                   <div class="active_content">
 <!--                    左侧文章图片-->
                     <div class="active_left">
-                      <router-link  :to="/article/+(item.id)" >
+                      <router-link  :to="/article/+(item.id)" target="_blank">
                         <img src="https://img2.baidu.com/it/u=3542822865,178316978&fm=253&fmt=auto&app=138&f=JPEG?w=412&h=186" alt="">
                       </router-link>
                     </div>
 <!--                    内容简介-->
                     <div class="active_right">
-                      <router-link  :to="/article/+(item.id)">
+                      <router-link  :to="/article/+(item.id)" target="_blank">
                         <p>
                           {{item.cover_abstract}}
                         </p>
                       </router-link>
                       <div class="operation">
                         <div class="operation_icon">
-                          <p><i class="iconfont icon-dianzan"></i> 1.2K 赞</p>
+                          <p><i class="iconfont icon-dianzan"></i> {{item.fabulous_num}} 赞</p>
                           <p><i class="el-icon-time"></i> {{ item.create_date }}</p>
                         </div>
                         <div>
-                          <a href="">
-                            <span class="user_name">{{ item.create_user }}</span>
-                          </a>
+                          <router-link :to='/PersonalBlog/+(item.create_user)' target="_blank"><span class="user_name">{{ item.create_user }}</span></router-link>
                         </div>
                       </div>
                     </div>
@@ -375,7 +373,6 @@ a {
   width: 890px;
 }
 .Community{
-  background-color: white;
   margin-bottom: 10px;
 }
 .right{
@@ -578,5 +575,9 @@ a {
 }
 .template_bottom{
   margin-bottom: 16px;
+}
+.active_blog {
+  margin-bottom: 10px;
+  background-color: white;
 }
 </style>

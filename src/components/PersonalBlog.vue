@@ -16,7 +16,7 @@
             <div class="user-profile-head-info-rr">
               <div class="user-profile-head-info-r-t">
                 <div class="user-profile-head-name">
-                  <div>双龙啊</div>
+                  <div>{{ user_id }}</div>
                   <i class="user_lv iconfont icon-icon-test3"></i>
                 </div>
               </div>
@@ -95,163 +95,68 @@
           <el-tabs v-model="activeName" :stretch="true" @tab-click="handleClick">
             <el-tab-pane label="文章" name="article">
               <div class="mainContent">
-                <article class="blog-list-box">
-                  <a href="">
+                <article class="blog-list-box" v-for="(item,index) in data" :key="index">
+                  <router-link  :to="/article/+(item.id)" class="active_title" target="_blank">
                     <div class="blog-list-box-top">
-                      <h4>VUE中使用 element UI 对数据进行分页</h4>
+                      <h4>{{ item.title }}</h4>
                     </div>
                     <div class="blog-list-content">
-                      今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                      项目使用Element UI 与 VUE框架.
+                      {{item.cover_abstract}}
                     </div>
                     <div class="blog-list-footer">
                       <div class="blog-list-footer-left">
-                        <div class="article-type-yc">原创</div>
-                        <div class="view-time-box">发布博客 2022.05.05·</div>
-                        <div class="view-num-box">4000 <span>阅读·</span></div>
-                        <div class="give-like-box">400 <span>点赞·</span></div>
-                        <div class="comment-box">40 <span>评论</span></div>
+                        <div class="article-type-yc">{{item.article_type}}</div>
+                        <div class="view-time-box">发布博客 {{ item.create_date }}</div>
+                        <div class="view-num-box">{{ item.browse_num }} <span>阅读·</span></div>
+                        <div class="give-like-box">{{ item.fabulous_num }} <span>点赞·</span></div>
+                        <div class="comment-box">{{item.comment_num}} <span>评论</span></div>
                       </div>
                     </div>
-                  </a>
-                </article>
-                <article class="blog-list-box">
-                  <a href="">
-                    <div class="blog-list-box-top">
-                      <h4>VUE中使用 element UI 对数据进行分页</h4>
-                    </div>
-                    <div class="blog-list-content">
-                      今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                      项目使用Element UI 与 VUE框架.
-                    </div>
-                    <div class="blog-list-footer">
-                      <div class="blog-list-footer-left">
-                        <div class="article-type-yc">原创</div>
-                        <div class="view-time-box">发布博客 2022.05.05·</div>
-                        <div class="view-num-box">4000 <span>阅读·</span></div>
-                        <div class="give-like-box">400 <span>点赞·</span></div>
-                        <div class="comment-box">40 <span>评论</span></div>
-                      </div>
-                    </div>
-                  </a>
-                </article>
-                <article class="blog-list-box">
-                  <a href="">
-                    <div class="blog-list-box-top">
-                      <h4>VUE中使用 element UI 对数据进行分页</h4>
-                    </div>
-                    <div class="blog-list-content">
-                      今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                      项目使用Element UI 与 VUE框架.
-                    </div>
-                    <div class="blog-list-footer">
-                      <div class="blog-list-footer-left">
-                        <div class="article-type-yc">原创</div>
-                        <div class="view-time-box">发布博客 2022.05.05·</div>
-                        <div class="view-num-box">4000 <span>阅读·</span></div>
-                        <div class="give-like-box">400 <span>点赞·</span></div>
-                        <div class="comment-box">40 <span>评论</span></div>
-                      </div>
-                    </div>
-                  </a>
-                </article>
-                <article class="blog-list-box">
-                  <a href="">
-                    <div class="blog-list-box-top">
-                      <h4>VUE中使用 element UI 对数据进行分页</h4>
-                    </div>
-                    <div class="blog-list-content">
-                      今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                      项目使用Element UI 与 VUE框架.
-                    </div>
-                    <div class="blog-list-footer">
-                      <div class="blog-list-footer-left">
-                        <div class="article-type-yc">原创</div>
-                        <div class="view-time-box">发布博客 2022.05.05·</div>
-                        <div class="view-num-box">4000 <span>阅读·</span></div>
-                        <div class="give-like-box">400 <span>点赞·</span></div>
-                        <div class="comment-box">40 <span>评论</span></div>
-                      </div>
-                    </div>
-                  </a>
-                </article>
-                <article class="blog-list-box">
-                  <a href="">
-                    <div class="blog-list-box-top">
-                      <h4>VUE中使用 element UI 对数据进行分页</h4>
-                    </div>
-                    <div class="blog-list-content">
-                      今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                      项目使用Element UI 与 VUE框架.
-                    </div>
-                    <div class="blog-list-footer">
-                      <div class="blog-list-footer-left">
-                        <div class="article-type-yc">原创</div>
-                        <div class="view-time-box">发布博客 2022.05.05·</div>
-                        <div class="view-num-box">4000 <span>阅读·</span></div>
-                        <div class="give-like-box">400 <span>点赞·</span></div>
-                        <div class="comment-box">40 <span>评论</span></div>
-                      </div>
-                    </div>
-                  </a>
+                  </router-link >
                 </article>
               </div>
             </el-tab-pane>
             <el-tab-pane label="问答" name="QA">
               <div class="Q_A">
-                <el-tabs value="answer" >
+                <el-tabs v-model="Q_A"  @tab-click="QA_Click">
                   <el-tab-pane label="回答的问题" name="answer">
                     <div>
-                      <div class="answer-list-box">
-                        <a href="">
+                      <div class="answer-list-box" v-for="(item,index) in data" :key="index">
+                        <router-link  :to='/questions/+(item.id)' target="_blank">
                           <div class="blog-list-box-top">
-                            <h4>VUE中使用 element UI 对数据进行分页</h4>
+                            <h4>{{item.title}}</h4>
                           </div>
                           <div class="blog-list-content answer-list-content">
-                            <div>答:</div>
-                            <div>今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                              项目使用Element UI 与 VUE框架.</div>
+                            <div>问题:</div>
+                            <div>{{item.content}}</div>
                           </div>
                           <div class="blog-list-footer">
                             <div class="blog-list-footer-left">
-                              <div class="view-time-box">回答问题 2022.05.05</div>
+                              <div class="view-time-box">回答问题 {{ item.create_date }}</div>
                             </div>
                           </div>
-                        </a>
-                        <a href="">
-                          <div class="blog-list-box-top">
-                            <h4>VUE中使用 element UI 对数据进行分页</h4>
-                          </div>
-                          <div class="blog-list-content answer-list-content">
-                            <div>答:</div>
-                            <div>今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                              项目使用Element UI 与 VUE框架.</div>
-                          </div>
-                          <div class="blog-list-footer">
-                            <div class="blog-list-footer-left">
-                              <div class="view-time-box">回答问题 2022.05.05</div>
-                            </div>
-                          </div>
-                        </a>
-                        <a href="">
-                          <div class="blog-list-box-top">
-                            <h4>VUE中使用 element UI 对数据进行分页</h4>
-                          </div>
-                          <div class="blog-list-content answer-list-content">
-                            <div>答:</div>
-                            <div>今天做项目的时候需要在后台已经将数据一股脑的返回回来的情况下做分页处理.
-                              项目使用Element UI 与 VUE框架.</div>
-                          </div>
-                          <div class="blog-list-footer">
-                            <div class="blog-list-footer-left">
-                              <div class="view-time-box">回答问题 2022.05.05</div>
-                            </div>
-                          </div>
-                        </a>
+                        </router-link>
                       </div>
                     </div>
                   </el-tab-pane>
-                  <el-tab-pane label="发布的问题" name="questions">发布的问题</el-tab-pane>
+                  <el-tab-pane label="发布的问题" name="questions">
+                    <div>
+                      <div class="answer-list-box" v-for="(item,index) in data" :key="index">
+                        <router-link  :to='/questions/+(item.id)' target="_blank">
+                          <div class="blog-list-box-top">
+                            <h4>{{item.title}}</h4>
+                          </div>
+                          <div class="blog-list-footer">
+                            <div class="blog-list-footer-left">
+                              <div class="view-time-box">发布问题 {{ item.create_date }}</div>
+                              ·
+                              <div class="view-time-box"> {{ item.answer_count }} 回答</div>
+                            </div>
+                          </div>
+                        </router-link>
+                      </div>
+                    </div>
+                  </el-tab-pane>
                 </el-tabs>
               </div>
             </el-tab-pane>
@@ -387,7 +292,18 @@ export default {
   },
   data() {
     return {
-      activeName: 'article'
+      data:[],
+      activeName: 'article',
+      Q_A:'',
+      user_id:'',
+      typeNum:'0',
+      listParams: {
+        pageNum: 1,
+        pageSize:10,
+        loading: false,
+        error: false,
+        finished: false,
+      },
     };
   },
   beforeCreate() {
@@ -395,9 +311,45 @@ export default {
         console.log(res)
     })
   },
+  created() {
+    var str = window.location.href;
+    var index = str .lastIndexOf("/");
+    this.user_id = str .substring(index + 1, str .length);
+    console.log('-----------')
+    console.log(this.user_id)
+
+    this.getBlogOrQaGrade();
+  },
   methods: {
-    handleClick(tab, event) {
-      console.log(tab, event);
+    handleClick() {
+      console.log(this.activeName)
+      if (this.activeName === 'article'){
+        console.log('文章')
+        this.typeNum = '0'
+        this.getBlogOrQaGrade();
+      }else if (this.activeName === 'QA'){
+        this.Q_A = 'answer'
+        this.typeNum = '1'
+        this.getBlogOrQaGrade();
+        console.log('问答页面')
+      }
+    },
+    QA_Click(){
+      if (this.Q_A === 'answer'){
+        console.log('回答的问题')
+        this.typeNum = '1'
+        this.getBlogOrQaGrade();
+      }else if (this.Q_A === 'questions'){
+        console.log('发布的问题')
+        this.typeNum = '2'
+        this.getBlogOrQaGrade();
+      }
+    },
+    getBlogOrQaGrade(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/php/getBlogOrQaGrade',{page:this.listParams.pageNum,rows:this.listParams.pageSize,php_type:this.typeNum,user_id:this.user_id}).then(res=>{
+        this.data = res.data.obj.list
+        console.log(this.data)
+      })
     }
   }
 }
@@ -723,8 +675,8 @@ h1,h2,h3,h4,h5,h6{
 }
 .answer-list-content{
   display: flex;
-  -webkit-box-align: start;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 .answer-list-box > a{
   display: block;

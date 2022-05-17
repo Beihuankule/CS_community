@@ -17,7 +17,7 @@
                   <div class="adoption-rate">采纳率:100%</div>
                 </div>
                 <div class="wap-right">
-                  <span class="issur-time">浏览 20K</span>
+                  <span class="issur-time">浏览 {{ browse_num }}</span>
                 </div>
               </div>
             </div>
@@ -285,6 +285,7 @@ export default {
       problemDzShow:'',
       answer_dznum:'',
       old_fabulous_num:'',
+      browse_num:'',
       follow:'',
     }
   },
@@ -293,6 +294,7 @@ export default {
     this.getQAContent();
     this.getQAAnswer();
     this.getQAComment();
+    this.getQaBrowse();
   },
   beforeCreate() {
     //判断是否登陆
@@ -335,6 +337,8 @@ export default {
         this.webDataString = QAContentData.content
         this.create_user = QAContentData.create_user
         this.create_date = QAContentData.create_date
+        this.browse_num = QAContentData.browse_num
+        console.log(QAContentData)
         this.label = QAContentData.label
         this.AnswerId = this.AnswerData.id
         // console.log('---------------')
@@ -532,7 +536,12 @@ export default {
         // this.new_fabulous_num = this.old_fabulous_num
         this.getQAContent();
       })
-    }
+    },
+    getQaBrowse(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLogin/getQaBrowse',{id:this.qaid}).then(res=>{
+        console.log(res)
+      })
+    },
   }
 }
 </script>

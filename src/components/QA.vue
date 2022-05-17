@@ -44,7 +44,7 @@
                     </li>
                     <li>
                       <i class="el-icon-view"></i>
-                      1
+                      {{item.browse_num}}
                     </li>
                     <li>
                       <i class="el-icon-time"></i>
@@ -80,7 +80,7 @@
                         </li>
                         <li>
                           <i class="el-icon-view"></i>
-                          1
+                          {{item.browse_num}}
                         </li>
                         <li>
                           <i class="el-icon-time"></i>
@@ -116,7 +116,7 @@
                         </li>
                         <li>
                           <i class="el-icon-view"></i>
-                          1
+                          {{item.browse_num}}
                         </li>
                         <li>
                           <i class="el-icon-time"></i>
@@ -152,7 +152,7 @@
                         </li>
                         <li>
                           <i class="el-icon-view"></i>
-                          1
+                          {{item.browse_num}}
                         </li>
                         <li>
                           <i class="el-icon-time"></i>

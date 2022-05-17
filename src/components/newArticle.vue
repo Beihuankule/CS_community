@@ -257,45 +257,22 @@ export default {
       {
         label =  label + this.tagsvalue[i] + '   '
       }
-      console.log(release_type)
-      // console.log(cover_field)
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {article_grade,article_type,content,cover_abstract,release_type,title,label}).then(res=>{
-        console.log(res)
-      })
-      // this.$refs.upload.submit()
-      // console.log(this.$refs.upload)
+      if (article_grade !=='' && article_type !== '' && content !== '' && cover_abstract !== '' && release_type !== '' && title !== '' && label !== '' && this.uploadFiles.length !== 0){
+        var reader = new FileReader();
+        reader.readAsDataURL(this.uploadFiles[0].raw);
+        reader.onload = () => {
+          this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {article_grade,article_type,content,cover_abstract,release_type,title,label,base64Code:reader.result}).then(res=>{
+            console.log(res)
+          })
+        };
+        this.$message.success('博客文章发布成功');
+        setTimeout(function (){
+          window.location.href = 'http://dev.water-mind.com:8080/#/blog'
+        },1000)
+      }else {
+        this.$message.warning('请输入完整内容后再进行发布');
+      }
 
-      // let fd = new FormData();
-      // fd.append(cover_field, this.uploadFiles[0].raw)
-      // fd.append(article_grade, this.form.Content_level)
-      // fd.append(article_type, this.form.Article_type)
-      // fd.append(content, this.text)
-      // fd.append(cover_abstract, this.textarea)
-      // fd.append(Release, this.form.Release)
-      // fd.append(title, this.textdata)
-      // fd.append(label, label)
-      //
-      //
-      // fetch('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle',{
-      //   method: 'post',
-      //   data: fd,
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     'csToken' : 'ef03c69993ff4459b6b81bc33820f47b'
-      //   }
-      // }).then(({ data }) => {
-      //   console.log(data)
-      // })
-      //
-
-      //
-      // //  console.log(title)
-      // //  console.log(article_grade)
-      // /*{cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}*/
-      // console.log(cover_field)
-      //  this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', fd).then(res=>{
-      //    console.log(res)
-      //  })
     },
     handleClose(done) {
       done();
@@ -308,7 +285,7 @@ export default {
       }
 
       console.log(this.tagsvalue)
-    }
+    },
   }
 }
 </script>

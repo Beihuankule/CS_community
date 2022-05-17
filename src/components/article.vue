@@ -16,9 +16,7 @@
 <!--          姓名-->
           <div class="user_info">
             <div class="user_info_name">
-              <a href="">
-                <span class="name">{{ data.create_user }}</span>
-              </a>
+              <router-link :to='/PersonalBlog/+(data.create_user)' target="_blank"><span class="user_name">{{ data.create_user }}</span></router-link>
             </div>
             <div class="user_info-name">
               <div class="user_info_age" title="已加入 创世社区 111天">加入111天</div>
@@ -125,8 +123,9 @@
                 <a href="">{{ data.create_user }}</a>
 <!--                更新时间-->
                 <span><i class="el-icon-time"></i> 于 {{ data.create_date }} 发布</span>
-                <span><i class="el-icon-view"></i> 200</span>
-                <span><i class="el-icon-star-off"></i> 收藏</span>
+                <span><i class="el-icon-view"></i> {{ data.browse_num }}</span>
+                <span @click="focus(articleId)" class="el-icon-star-off" v-show="data.is_focus === 'wgz' ">收藏</span>
+                <span @click="cancelSpotFocus(articleId)"  class="el-icon-star-on" v-show="data.is_focus === 'gz' ">收藏</span>
               </div>
             </div>
             <div class="blog-tags-box">
@@ -134,7 +133,7 @@
                 <span>文章标签:</span>
                 <a href="">{{ data.label }}</a>
               </div>
-              <div>
+              <div v-show="delShow">
                 <router-link  :to='/editArticle/+(articleId)' target=“_blank” class="edit">
                   <span >编辑</span>
                 </router-link>
@@ -175,17 +174,18 @@
 <!--            点赞/评论/收藏-->
             <div class="toolbox-middle">
               <ul class="toolbox-list">
-                <li>
-                  <span><i class="iconfont icon-dianzan"></i>点赞(1)</span>
+                <li @click="dianzan(articleId)" v-show="data.is_fabulous === 'wdz'">
+                  <span><i class="iconfont icon-dianzan" ></i>点赞({{fabulousNum}})</span>
+                </li>
+                <li @click="rem_dianzan(articleId)" v-show="data.is_fabulous === 'dz'">
+                  <span><i class="iconfont icon-dianzan1" ></i>点赞({{ fabulousNum }})</span>
                 </li>
                 <li>
-                  <span><i class="iconfont icon-cai"></i></span>
+                  <span><i class="el-icon-chat-dot-square"></i>评论({{ comments }})</span>
                 </li>
                 <li>
-                  <span><i class="el-icon-chat-dot-square"></i>评论(1)</span>
-                </li>
-                <li>
-                  <span><i class="el-icon-star-off"></i>收藏</span>
+                  <span @click="focus(articleId)" class="el-icon-star-off" v-show="data.is_focus === 'wgz' ">收藏</span>
+                  <span @click="cancelSpotFocus(articleId)"  class="el-icon-star-on" v-show="data.is_focus === 'gz' ">收藏</span>
                 </li>
                 <li>
                   <span><i class="iconfont icon-redenvelope"></i>打赏</span>
@@ -201,7 +201,7 @@
 <!--      评论-->
       <div class="blog-content-box">
         <div class="comment-title">
-          <span>评论 1</span>
+          <span>评论 {{ comments }}</span>
         </div>
 <!--        评论框-->
         <div class="comment-edit-box">
@@ -233,9 +233,10 @@
                         <span>{{ item.create_date }}</span>
                       </div>
                       <div class="comment-like">
-                        <span @click="delComment(item.id)" class="del">删除</span>
+                        <span @click="delComment(item.id)" class="del" v-show="item.user_id === Current_user">删除</span>
                         <span @click="commentArticle(item.id)"><i class="el-icon-chat-line-square"></i> 回复 </span>
-                        <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
+                        <span v-show="item.is_fabulous === 'wdz' " @click="dianzan(item.id)"><i class="iconfont icon-dianzan" ></i> 点赞 </span>
+                        <span v-show="item.is_fabulous === 'dz' " @click="rem_dianzan(item.id)"><i class="iconfont icon-dianzan1" ></i> 点赞 </span>
                       </div>
                     </div>
                     <div class="comment-center">
@@ -264,9 +265,10 @@
                             <span>{{ key.create_date }}</span>
                           </div>
                           <div class="comment-like">
-                            <span @click="delComment(key.id)" class="del">删除</span>
+                            <span @click="delComment(key.id)" class="del" v-show="item.user_id === Current_user">删除</span>
                             <span @click="isShow = key.id"><i class="el-icon-chat-line-square"></i> 回复 </span>
-                            <span><i class="iconfont icon-dianzan"></i> 点赞 </span>
+                            <span v-show="key.is_fabulous === 'wdz' " @click="dianzan(key.id)"><i class="iconfont icon-dianzan"></i> 点赞 </span>
+                            <span v-show="key.is_fabulous === 'dz' " @click="rem_dianzan(key.id)"><i class="iconfont icon-dianzan1"></i> 点赞 </span>
                           </div>
                         </div>
                         <div class="comment-center">
@@ -298,10 +300,14 @@ export default {
   data(){
     return{
       data:'',
+      Publishing_user:'',
+      delShow:false,
       commentObj:'',
+      comments:0,
       isShow:'',
       replyText:'',
       reply_input:false,
+      fabulousNum:0,
       comment:'',
       Current_user:'',
       articleId:'',
@@ -319,6 +325,7 @@ export default {
   created() {
     this.geturl();
     this.getArticle();
+    this.getBlogArticleBrowse();
   },
   methods:{
     //获取当前博客文章id
@@ -333,9 +340,17 @@ export default {
         console.log('文章详情：')
         this.data = res.data.obj.blogArticleObj
         console.log(res.data.obj.blogArticleObj)
+        this.fabulousNum = this.data.fabulous_num
         console.log('评论详情')
         console.log(res.data.obj.commentObj)
         this.commentObj = res.data.obj.commentObj
+        if (this.commentObj !== null){
+          this.comments = this.commentObj.length
+        }
+        this.Publishing_user = this.data.create_user
+        if (this.Publishing_user === this.Current_user){
+          this.delShow = true
+        }
       })
     },
     //评论
@@ -343,6 +358,9 @@ export default {
       console.log(this.comment)
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addComment',{article_id:this.articleId,content:this.comment}).then(res=>{
         console.log(res)
+        this.$message.success('评论成功');
+        this.comment = ''
+        this.getArticle();
       })
     },
     //回复输入框
@@ -353,16 +371,75 @@ export default {
     reply(){
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addComment',{article_id:this.articleId,content:this.replyText,sup_comment_id:this.isShow}).then(res=>{
         console.log(res)
+        this.$message.success('回复成功');
+        this.replyText = ''
+        this.isShow = ''
+        this.getArticle();
       })
     },
     delArticle(){
+      this.$confirm('此操作将永久删除该文章, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/delBlogArticle',{id:this.articleId}).then(res=>{
+          console.log(res)
+        })
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        });
+        setTimeout(function (){
+          window.location.href = 'http://dev.water-mind.com:8080/#/blog'
+        },1000)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
 
     },
     delComment(id){
       this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/delComment',{id:id}).then(res=>{
         console.log(res)
+        this.$message.error('删除成功');
+        this.getArticle();
       })
-    }
+    },
+    //点赞
+    dianzan(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFabulous/spotFabulous',{fabulous_obj:id}).then(res=>{
+        console.log(res)
+        this.$message.success('点赞成功');
+        this.getArticle();
+      })
+    },
+    rem_dianzan(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFabulous/cancelSpotFabulous',{fabulous_obj:id}).then(res=>{
+        console.log(res)
+        this.getArticle();
+      })
+    },
+    focus(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFocus/spotFocus',{focus_obj:id}).then(res=>{
+        console.log(res)
+        this.$message.success('收藏成功');
+        this.getArticle();
+      })
+    },
+    cancelSpotFocus(id){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseFocus/cancelFocus',{focus_obj:id}).then(res=>{
+        console.log(res)
+        this.getArticle();
+      })
+    },
+    getBlogArticleBrowse(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLoginBlog/getBlogArticleBrowse',{id:this.articleId}).then(res=>{
+        console.log(res)
+      })
+    },
   }
 }
 </script>

@@ -87,7 +87,7 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item class="right">
-            <el-button type="primary" @click="newArticle">发布文章</el-button>
+            <el-button type="primary" @click="newArticle">确认修改</el-button>
             <el-button>取消</el-button>
           </el-form-item>
         </el-form>
@@ -131,14 +131,16 @@ export default {
   },
   data(){
     return{
+      data:'',
       //封面上传
       dialogImageUrl: '',
+      articleId:'',
       dialogVisible: false,
       disabled: false,
       uploadFiles:[],
       fileList: [],
       textdata:'',
-      title:'请输入文章标题（5～100个字）',
+      title:'',
       //文章标签
       tagsvalue:[],
       mark_selection_box:false,
@@ -165,49 +167,12 @@ export default {
         Release:'全部可见',
         label:'',
       },
-      text:'\n' +
-          '# 前言\n' +
-          '`提示：这里可以添加本文要记录的大概内容：`\n' +
-          '\n' +
-          '例如：随着人工智能的不断发展，机器学习这门技术也越来越重要，很多人都开启了学习机器学习，本文就介绍了机器学习的基础内容。\n' +
-          '\n' +
-          '---\n' +
-          '\n' +
-          '`提示：以下是本篇文章正文内容，下面案例可供参考`\n' +
-          '\n' +
-          '# 一、pandas是什么？\n' +
-          '示例：pandas 是基于NumPy 的一种工具，该工具是为了解决数据分析任务而创建的。\n' +
-          '\n' +
-          '# 二、使用步骤\n' +
-          '## 1.引入库\n' +
-          '代码如下（示例）：\n' +
-          '\n' +
-          '```c\n' +
-          'import numpy as np\n' +
-          'import pandas as pd\n' +
-          'import matplotlib.pyplot as plt\n' +
-          'import seaborn as sns\n' +
-          'import warnings\n' +
-          'warnings.filterwarnings(\'ignore\')\n' +
-          'import  ssl\n' +
-          'ssl._create_default_https_context = ssl._create_unverified_context\n' +
-          '```\n' +
-          '\n' +
-          '## 2.读入数据\n' +
-          '代码如下（示例）：\n' +
-          '```c\n' +
-          'data = pd.read_csv(\n' +
-          '    \'https://labfile.oss.aliyuncs.com/courses/1283/adult.data.csv\')\n' +
-          'print(data.head())\n' +
-          '```\n' +
-          '该处使用的url网络请求的数据。\n' +
-          '\n' +
-          '---\n' +
-          '\n' +
-          '# 总结\n' +
-          '提示：这里对文章进行总结：\n' +
-          '例如：以上就是今天要讲的内容，本文仅仅简单介绍了pandas的使用，而pandas提供了大量能使我们快速便捷地处理数据的函数和方法。',
+      text:'',
     }
+  },
+  created() {
+    this.geturl();
+    this.getArticle();
   },
   beforeCreate() {
     this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBaseLabel/getLabelData').then(res=>{
@@ -215,6 +180,25 @@ export default {
     })
   },
   methods: {
+    geturl(){
+      let url = window.location.href;
+      this.articleId = url.slice(url.indexOf('#')+14)
+      console.log('文章ID：')
+      console.log(this.articleId);
+    },
+    getArticle(){
+      this.$ajax.post('http://192.168.199.209:8081/cs_ow/dontLoginBlog/getBlogArticleById',{id:this.articleId}).then(res=>{
+        console.log(res.data.obj.blogArticleObj)
+        this.data = res.data.obj.blogArticleObj
+        this.text = this.data.content
+        this.textdata = this.data.title
+        this.textarea = this.data.cover_abstract
+        // this.tagsvalue = this.data.label
+        this.form.Article_type = this.data.article_type
+        this.form.Content_level = this.data.article_grade
+        this.form.Release = this.data.release_type
+      })
+    },
     httpRequest(option) {
       this.fileList.push(option)
     },
@@ -257,45 +241,23 @@ export default {
       {
         label =  label + this.tagsvalue[i] + '   '
       }
-      console.log(release_type)
-      // console.log(cover_field)
-      this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', {article_grade,article_type,content,cover_abstract,release_type,title,label}).then(res=>{
-        console.log(res)
-      })
-      // this.$refs.upload.submit()
-      // console.log(this.$refs.upload)
+      if (article_grade !=='' && article_type !== '' && content !== '' && cover_abstract !== '' && release_type !== '' && title !== '' && label !== '' && this.uploadFiles.length !== 0){
+        var reader = new FileReader();
+        reader.readAsDataURL(this.uploadFiles[0].raw);
+        reader.onload = () => {
+          this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/editBlogArticle', {id:this.articleId,article_grade,article_type,content,cover_abstract,release_type,title,label,base64Code:reader.result}).then(res=>{
+            console.log(res)
+          })
+        };
+        this.$message.success('文章修改成功');
+        let id = this.articleId
+        setTimeout(function (){
+          window.location.href = `http://dev.water-mind.com:8080/#/article/${id}`
+        },1000)
+      }else {
+        this.$message.warning('请输入完整内容后再进行提交');
+      }
 
-      // let fd = new FormData();
-      // fd.append(cover_field, this.uploadFiles[0].raw)
-      // fd.append(article_grade, this.form.Content_level)
-      // fd.append(article_type, this.form.Article_type)
-      // fd.append(content, this.text)
-      // fd.append(cover_abstract, this.textarea)
-      // fd.append(Release, this.form.Release)
-      // fd.append(title, this.textdata)
-      // fd.append(label, label)
-      //
-      //
-      // fetch('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle',{
-      //   method: 'post',
-      //   data: fd,
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     'csToken' : 'ef03c69993ff4459b6b81bc33820f47b'
-      //   }
-      // }).then(({ data }) => {
-      //   console.log(data)
-      // })
-      //
-
-      //
-      // //  console.log(title)
-      // //  console.log(article_grade)
-      // /*{cover_field,article_grade,article_type,content,cover_abstract,Release,title,label}*/
-      // console.log(cover_field)
-      //  this.$ajax.post('http://192.168.199.209:8081/cs_ow/owBlog/addBlogArticle', fd).then(res=>{
-      //    console.log(res)
-      //  })
     },
     handleClose(done) {
       done();
@@ -308,7 +270,7 @@ export default {
       }
 
       console.log(this.tagsvalue)
-    }
+    },
   }
 }
 </script>

@@ -58,7 +58,7 @@
             <div class="el-icon-s-custom user"></div>
             <el-dropdown-menu slot="dropdown" class="dropdown">
               <div class="username">
-                <router-link :to='/PersonalBlog/+(this.username)'>{{this.username}}</router-link>
+                <router-link :to='/PersonalBlog/+(this.username)' target="_blank">{{this.username}}</router-link>
                 <span><i class="iconfont icon-icon-test2"></i></span>
               </div>
               <div class="user_data">
